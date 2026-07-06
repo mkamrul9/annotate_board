@@ -8,7 +8,11 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         # Only return tasks belonging to the logged-in user
-        return Task.objects.filter(user=self.request.user)
+        queryset = Task.objects.filter(user=self.request.user)
+        due_date = self.request.query_params.get('due_date')
+        if due_date:
+            queryset = queryset.filter(due_date=due_date)
+        return queryset
 
     def perform_create(self, serializer):
         # Auto-attach the user when creating a new task
