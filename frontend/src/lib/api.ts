@@ -5,7 +5,7 @@ const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/',
 });
 
-// Intercept requests and attach the token
+// Attach the auth token to every outgoing request
 api.interceptors.request.use(
   (config) => {
     const token = useAuthStore.getState().token;
@@ -17,13 +17,16 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Optional: Intercept 401 Unauthorized responses to force logout
+// On 401 Unauthorized: clear local auth state and redirect to login
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       useAuthStore.getState().logout();
-      window.location.href = '/'; // Redirect to login
+      // Guard against SSR context where window is undefined
+      if (typeof window !== 'undefined') {
+        window.location.href = '/';
+      }
     }
     return Promise.reject(error);
   }

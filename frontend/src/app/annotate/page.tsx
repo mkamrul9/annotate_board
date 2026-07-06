@@ -1,27 +1,95 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { Suspense, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
 import { useAnnotationStore } from '@/store/useAnnotationStore';
+import { useAuthStore } from '@/store/useAuthStore';
 import DrawingCanvas from '@/components/annotate/DrawingCanvas';
-import { UploadCloud, ChevronLeft, ChevronRight, Wand2, Download } from 'lucide-react';
+import {
+  UploadCloud,
+  ChevronLeft,
+  ChevronRight,
+  Wand2,
+  Download,
+  Loader2,
+  ImageIcon,
+  Shapes,
+} from 'lucide-react';
+import { motion } from 'framer-motion';
 
-export default function AnnotatePage() {
+// ── Thumbnail strip ───────────────────────────────────────────────────────────
+
+function ThumbnailStrip() {
+  const { images, currentIndex, setCurrentIndex } = useAnnotationStore();
+
+  if (images.length === 0) return null;
+
+  return (
+    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
+      {images.map((img, i) => (
+        <button
+          key={img.id}
+          onClick={() => setCurrentIndex(i)}
+          className={`relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+            i === currentIndex
+              ? 'border-indigo-500 shadow-lg shadow-indigo-900/40'
+              : 'border-slate-700 hover:border-slate-500 opacity-60 hover:opacity-100'
+          }`}
+          title={`Image #${img.id} — ${img.polygons.length} annotation(s)`}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={img.image}
+            alt={`Thumbnail ${i + 1}`}
+            className="w-full h-full object-cover"
+          />
+          {img.polygons.length > 0 && (
+            <span className="absolute bottom-0.5 right-0.5 bg-indigo-600 text-white text-[9px] font-bold px-1 rounded">
+              {img.polygons.length}
+            </span>
+          )}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ── Main annotate content ─────────────────────────────────────────────────────
+
+function AnnotateContent() {
+  const router = useRouter();
+  const { isAuthenticated } = useAuthStore();
   const searchParams = useSearchParams();
   const targetImageId = searchParams.get('imageId');
-  
-  const { images, currentIndex, loading, fetchImages, uploadImage, setCurrentIndex, autoAnnotate } = useAnnotationStore();
+
+  const {
+    images,
+    currentIndex,
+    loading,
+    uploading,
+    fetchImages,
+    uploadImage,
+    setCurrentIndex,
+    autoAnnotate,
+  } = useAnnotationStore();
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Auth guard
   useEffect(() => {
-    // 1. Fetch images if we haven't already
-    if (images.length === 0) {
-      fetchImages();
+    if (!isAuthenticated) {
+      router.replace('/');
     }
-  }, [fetchImages, images.length]);
+  }, [isAuthenticated, router]);
 
+  // Fetch images on mount (always, to handle deleted-all edge case)
   useEffect(() => {
-    // 2. Once images are loaded, if there's a target ID in the URL, slide directly to it
+    fetchImages();
+  }, [fetchImages]);
+
+  // Navigate to target image when images are loaded (from TaskCard deep-link)
+  useEffect(() => {
     if (targetImageId && images.length > 0) {
       const index = images.findIndex((img) => img.id === Number(targetImageId));
       if (index !== -1 && index !== currentIndex) {
@@ -31,8 +99,10 @@ export default function AnnotatePage() {
   }, [targetImageId, images, currentIndex, setCurrentIndex]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
+    if (e.target.files?.[0]) {
       uploadImage(e.target.files[0]);
+      // Reset so the same file can be re-uploaded if needed
+      e.target.value = '';
     }
   };
 
@@ -40,14 +110,13 @@ export default function AnnotatePage() {
     if (!activeImage || activeImage.polygons.length === 0) return;
 
     // YOLO segmentation format: <class-index> <x1> <y1> <x2> <y2> ...
-    // Assuming class index '0' for our single generic class
-    let yoloText = '';
-    activeImage.polygons.forEach((poly) => {
-      const coords = poly.points.map(([x, y]) => `${x.toFixed(6)} ${y.toFixed(6)}`).join(' ');
-      yoloText += `0 ${coords}\n`;
-    });
+    const yoloText = activeImage.polygons
+      .map((poly) => {
+        const coords = poly.points.map(([x, y]) => `${x.toFixed(6)} ${y.toFixed(6)}`).join(' ');
+        return `0 ${coords}`;
+      })
+      .join('\n');
 
-    // Create a Blob and trigger download
     const blob = new Blob([yoloText], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -61,85 +130,160 @@ export default function AnnotatePage() {
 
   const activeImage = images[currentIndex];
 
+  if (!isAuthenticated) return null;
+
   return (
-    <div className="min-h-screen bg-slate-950 p-8 text-slate-200">
-      <div className="max-w-6xl mx-auto space-y-6">
-        
-        {/* Header & Uploader */}
-        <div className="flex justify-between items-end mb-8">
+    <div className="min-h-full bg-slate-950 p-6 md:p-8 text-slate-200">
+      <div className="max-w-6xl mx-auto space-y-5">
+
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-white">Image Annotation</h1>
-            <p className="text-slate-400 mt-1">Click to draw shapes. Right-click a shape to delete it.</p>
+            <h1 className="text-2xl font-bold text-white tracking-tight">Image Annotation</h1>
+            <p className="text-slate-500 text-sm mt-0.5">
+              Click on canvas to draw polygon shapes · Right-click to delete
+            </p>
           </div>
-          
-          <div className="flex gap-4">
+
+          <div className="flex gap-2 flex-wrap">
             {activeImage && (
               <>
-                <button 
+                <button
                   onClick={exportYOLOFormat}
-                  className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-5 py-2.5 rounded-lg font-medium transition shadow-lg border border-slate-700"
+                  disabled={activeImage.polygons.length === 0}
+                  className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-medium transition border border-slate-700"
+                  title={activeImage.polygons.length === 0 ? 'No annotations to export' : 'Export YOLO format'}
                 >
-                  <Download size={20} /> Export to YOLO
+                  <Download size={16} /> Export YOLO
                 </button>
-                <button 
+                <button
                   onClick={() => autoAnnotate(activeImage.id)}
                   disabled={loading}
-                  className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-lg font-medium transition shadow-lg disabled:opacity-50"
+                  className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-medium transition pulse-glow shadow-lg"
                 >
-                  <Wand2 size={20} /> 
-                  {loading ? 'Analyzing...' : 'Auto-Annotate'}
+                  {loading ? <Loader2 size={16} className="animate-spin" /> : <Wand2 size={16} />}
+                  {loading ? 'Analyzing…' : 'Auto-Annotate'}
                 </button>
               </>
             )}
+
             <div>
-              <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
-              <button 
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/*"
+                className="hidden"
+                aria-label="Upload image"
+              />
+              <button
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-lg font-medium transition shadow-lg"
+                disabled={uploading}
+                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-lg shadow-indigo-900/30"
               >
-                <UploadCloud size={20} /> Upload Image
+                {uploading
+                  ? <><Loader2 size={16} className="animate-spin" /> Uploading…</>
+                  : <><UploadCloud size={16} /> Upload Image</>
+                }
               </button>
             </div>
           </div>
         </div>
 
-        {/* Carousel / Slider Controls */}
+        {/* Image info bar + thumbnail strip */}
         {images.length > 0 && (
-          <div className="flex justify-between items-center bg-slate-900 p-4 rounded-xl border border-slate-800">
-            <button 
-              onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
-              disabled={currentIndex === 0}
-              className="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 disabled:opacity-30 transition"
-            >
-              <ChevronLeft />
-            </button>
-            <span className="font-medium text-slate-400">
-              Image {currentIndex + 1} of {images.length}
-            </span>
-            <button 
-              onClick={() => setCurrentIndex(Math.min(images.length - 1, currentIndex + 1))}
-              disabled={currentIndex === images.length - 1}
-              className="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 disabled:opacity-30 transition"
-            >
-              <ChevronRight />
-            </button>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-3"
+          >
+            {/* Navigation row */}
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
+                disabled={currentIndex === 0}
+                className="p-1.5 bg-slate-800 rounded-lg hover:bg-slate-700 disabled:opacity-30 transition"
+                aria-label="Previous image"
+              >
+                <ChevronLeft size={18} />
+              </button>
+
+              <div className="flex items-center gap-3 text-sm">
+                <span className="text-slate-400 font-medium">
+                  Image {currentIndex + 1} of {images.length}
+                </span>
+                {activeImage && (
+                  <span className="flex items-center gap-1 text-xs bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-full">
+                    <Shapes size={11} />
+                    {activeImage.polygons.length} annotation(s)
+                  </span>
+                )}
+              </div>
+
+              <button
+                onClick={() => setCurrentIndex(Math.min(images.length - 1, currentIndex + 1))}
+                disabled={currentIndex === images.length - 1}
+                className="p-1.5 bg-slate-800 rounded-lg hover:bg-slate-700 disabled:opacity-30 transition"
+                aria-label="Next image"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+
+            {/* Thumbnail strip */}
+            <ThumbnailStrip />
+          </motion.div>
         )}
 
-        {/* The Canvas Workspace */}
-        {loading ? (
-          <div className="h-[600px] flex items-center justify-center border border-slate-800 rounded-xl bg-slate-900/50">
-            <span className="text-slate-400 animate-pulse">Loading workspace...</span>
+        {/* Canvas workspace */}
+        {loading && !activeImage ? (
+          <div className="h-[580px] flex items-center justify-center border border-slate-800 rounded-xl bg-slate-900/50">
+            <div className="flex flex-col items-center gap-3 text-slate-400">
+              <Loader2 size={32} className="animate-spin" />
+              <span className="text-sm">Loading workspace…</span>
+            </div>
           </div>
         ) : activeImage ? (
           <DrawingCanvas imageObj={activeImage} />
         ) : (
-          <div className="h-[600px] flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-xl text-slate-500">
-            <UploadCloud size={48} className="mb-4 opacity-50" />
-            <p>No images uploaded yet. Upload an image to begin annotating.</p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="h-[580px] flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-xl text-slate-500 gap-4"
+          >
+            <div className="w-16 h-16 rounded-2xl bg-slate-800/60 flex items-center justify-center">
+              <ImageIcon size={28} className="opacity-50" />
+            </div>
+            <div className="text-center">
+              <p className="font-medium text-slate-400">No images yet</p>
+              <p className="text-sm mt-1">Upload a medical image to begin annotating</p>
+            </div>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition"
+            >
+              <UploadCloud size={16} /> Upload Image
+            </button>
+          </motion.div>
         )}
       </div>
     </div>
+  );
+}
+
+// ── Page export ───────────────────────────────────────────────────────────────
+
+export default function AnnotatePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-full bg-slate-950 flex items-center justify-center text-slate-400">
+          <Loader2 size={24} className="animate-spin mr-3" />
+          Loading…
+        </div>
+      }
+    >
+      <AnnotateContent />
+    </Suspense>
   );
 }

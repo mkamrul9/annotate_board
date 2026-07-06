@@ -1,17 +1,30 @@
 from rest_framework import serializers
 from .models import Task
 
+
 class TaskSerializer(serializers.ModelSerializer):
-    # This automatically fetches the URL so Next.js can render a thumbnail
-    image_url = serializers.CharField(source='annotation_image.image.url', read_only=True)
+    # SerializerMethodField with null-guard to prevent AttributeError
+    # when annotation_image is None (tasks without attached scans).
+    image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Task
-        fields = ['id', 'title', 'priority', 'status', 'due_date', 'tags', 'annotation_image', 'image_url', 'created_at']
+        fields = [
+            'id', 'title', 'priority', 'status', 'due_date',
+            'tags', 'annotation_image', 'image_url', 'created_at'
+        ]
         read_only_fields = ['id', 'created_at']
 
-    # Custom validation example to show you care about data integrity
-    def validate_title(self, value):
+    def get_image_url(self, obj) -> str | None:
+        """Safely return the image URL or None if no image is attached."""
+        if obj.annotation_image and obj.annotation_image.image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.annotation_image.image.url)
+            return obj.annotation_image.image.url
+        return None
+
+    def validate_title(self, value: str) -> str:
         if not value.strip():
             raise serializers.ValidationError("Task title cannot be empty.")
-        return value
+        return value.strip()

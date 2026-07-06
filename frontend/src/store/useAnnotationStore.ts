@@ -4,12 +4,12 @@ import { toast } from 'sonner';
 
 export interface Polygon {
   id?: number;
-  points: number[][]; // Array of [x, y] percentages, e.g., [[0.2, 0.5], [0.3, 0.6]]
+  points: number[][]; // Array of [x, y] fractions in [0,1], e.g. [[0.2, 0.5], [0.3, 0.6]]
 }
 
 export interface AnnotationImage {
   id: number;
-  image: string; // URL
+  image: string; // absolute URL
   polygons: Polygon[];
 }
 
@@ -17,6 +17,7 @@ interface AnnotationState {
   images: AnnotationImage[];
   currentIndex: number;
   loading: boolean;
+  uploading: boolean;
   fetchImages: () => Promise<void>;
   uploadImage: (file: File) => Promise<void>;
   setCurrentIndex: (index: number) => void;
@@ -29,6 +30,7 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
   images: [],
   currentIndex: 0,
   loading: false,
+  uploading: false,
 
   setCurrentIndex: (index) => set({ currentIndex: index }),
 
@@ -45,17 +47,24 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
   },
 
   uploadImage: async (file: File) => {
+    set({ uploading: true });
     const formData = new FormData();
     formData.append('image', file);
     try {
       const response = await api.post('annotations/images/', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      set((state) => ({ images: [response.data, ...state.images], currentIndex: 0 }));
-      toast.success('Image uploaded');
+      // Prepend the new image and focus it
+      set((state) => ({
+        images: [response.data, ...state.images],
+        currentIndex: 0,
+        uploading: false,
+      }));
+      toast.success('Image uploaded successfully');
     } catch (error) {
       console.error('Upload failed', error);
-      toast.error('Upload failed');
+      toast.error('Upload failed. Please try again.');
+      set({ uploading: false });
     }
   },
 
@@ -67,27 +76,31 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
           img.id === imageId ? { ...img, polygons: [...img.polygons, response.data] } : img
         ),
       }));
-      toast.success('Polygon saved');
+      toast.success('Annotation saved');
     } catch (error) {
       console.error('Failed to save polygon', error);
-      toast.error('Failed to save polygon');
+      toast.error('Failed to save annotation');
     }
   },
 
   deletePolygon: async (polygonId, imageId) => {
+    // Optimistic update
+    const originalImages = get().images;
+    set((state) => ({
+      images: state.images.map((img) =>
+        img.id === imageId
+          ? { ...img, polygons: img.polygons.filter((p) => p.id !== polygonId) }
+          : img
+      ),
+    }));
     try {
       await api.delete(`annotations/polygons/${polygonId}/`);
-      set((state) => ({
-        images: state.images.map((img) =>
-          img.id === imageId
-            ? { ...img, polygons: img.polygons.filter((p) => p.id !== polygonId) }
-            : img
-        ),
-      }));
-      toast.success('Polygon deleted');
+      toast.success('Annotation deleted');
     } catch (error) {
       console.error('Failed to delete polygon', error);
-      toast.error('Failed to delete polygon');
+      toast.error('Failed to delete annotation');
+      // Rollback
+      set({ images: originalImages });
     }
   },
 
@@ -95,22 +108,21 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
     set({ loading: true });
     try {
       const response = await api.post(`annotations/images/${imageId}/auto_annotate/`);
-      const newPolygons = response.data;
-      
-      // Update state with the newly generated polygons
+      const newPolygons: Polygon[] = response.data;
+
       set((state) => ({
-        images: state.images.map((img) => 
-          img.id === imageId 
-            ? { ...img, polygons: [...img.polygons, ...newPolygons] } 
+        images: state.images.map((img) =>
+          img.id === imageId
+            ? { ...img, polygons: [...img.polygons, ...newPolygons] }
             : img
         ),
-        loading: false
+        loading: false,
       }));
-      toast.success('AI Annotation complete');
+      toast.success(`AI Annotation complete — ${newPolygons.length} region(s) detected`);
     } catch (error) {
       console.error('Auto-annotation failed', error);
-      toast.error('AI Annotation failed');
+      toast.error('AI Annotation failed. Please try again.');
       set({ loading: false });
     }
-  }
+  },
 }));

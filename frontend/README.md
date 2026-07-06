@@ -28,12 +28,17 @@ Instead of throwing every trending library at the wall, the architecture is stri
 * **Authentication:** Secure Token-based login flow.
 * **Kanban Board (`/tasks`):**
   * Date-synced task filtering (independent reusable `<DateSelector/>`).
-  * Drag-and-drop tasks between "To Do", "In Progress", and "Done".
-  * Full CRUD (Create, Read, Update, Delete) via modal interfaces.
+  * **Voice-to-Task:** Integrated Web Speech API for hands-free task creation.
+  * Drag-and-drop tasks between "To Do", "In Progress", and "Done" with staggered Framer Motion animations.
+  * Full CRUD (Create, Read, Update, Delete) via spring-loaded modal interfaces.
 * **Image Annotation (`/annotate`):**
   * Image upload directly to the Django backend.
   * Interactive carousel to slide through uploaded images.
-  * Click-to-draw continuous polygon generation.
+  * **Zero-Lag Drawing Engine:** Three-layer segregated architecture for instant polygon rendering.
+  * Click-to-draw continuous polygon generation with `Ctrl+Z` undo stack.
+  * **Radiologist Toolkit:** Live Brighten and Invert filters using Konva image caching.
+  * **Auto-Annotate:** Instant YOLO-powered AI segmentation directly on the canvas.
+  * **YOLO Exporter:** One-click generation of normalized `.txt` datasets for ML pipelines.
   * Right-click deletion of saved annotations.
 
 ## 🚀 How to Run Locally
