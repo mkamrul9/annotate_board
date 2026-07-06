@@ -1,7 +1,13 @@
 import { Task } from '@/store/useTaskStore';
 import { Draggable } from '@hello-pangea/dnd';
 
-export default function TaskCard({ task, index }: { task: Task; index: number }) {
+interface TaskCardProps {
+  task: Task;
+  index: number;
+  onEdit?: (task: Task) => void;
+}
+
+export default function TaskCard({ task, index, onEdit }: TaskCardProps) {
   const priorityColors = {
     LOW: 'bg-green-500/20 text-green-400 border-green-500/30',
     MEDIUM: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
@@ -15,7 +21,8 @@ export default function TaskCard({ task, index }: { task: Task; index: number })
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          className={`p-4 mb-3 rounded-lg border bg-slate-900 transition-all ${
+          onClick={() => onEdit && onEdit(task)}
+          className={`p-4 mb-3 rounded-lg border bg-slate-900 transition-all cursor-pointer ${
             snapshot.isDragging ? 'border-indigo-500 shadow-2xl scale-105 opacity-90' : 'border-slate-800 hover:border-slate-700 shadow-md'
           }`}
         >

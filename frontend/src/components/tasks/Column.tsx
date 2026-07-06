@@ -6,9 +6,10 @@ interface ColumnProps {
   id: string;
   title: string;
   tasks: Task[];
+  onEditTask?: (task: Task) => void;
 }
 
-export default function Column({ id, title, tasks }: ColumnProps) {
+export default function Column({ id, title, tasks, onEditTask }: ColumnProps) {
   return (
     <div className="flex flex-col bg-slate-950/50 border border-slate-800 rounded-xl w-full min-h-[600px] p-4">
       <div className="flex items-center justify-between mb-4">
@@ -28,7 +29,7 @@ export default function Column({ id, title, tasks }: ColumnProps) {
             }`}
           >
             {tasks.map((task, index) => (
-              <TaskCard key={task.id} task={task} index={index} />
+              <TaskCard key={task.id} task={task} index={index} onEdit={onEditTask} />
             ))}
             {provided.placeholder}
           </div>

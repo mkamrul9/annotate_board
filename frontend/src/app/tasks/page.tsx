@@ -2,13 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
-import { useTaskStore, TaskStatus } from '@/store/useTaskStore';
+import { useTaskStore, TaskStatus, Task } from '@/store/useTaskStore';
 import DateSelector from '@/components/tasks/DateSelector';
 import Column from '@/components/tasks/Column';
+import TaskModal from '@/components/tasks/TaskModal';
+import { Plus } from 'lucide-react';
 
 export default function TasksPage() {
   const { tasks, fetchTasks, moveTask } = useTaskStore();
   const [mounted, setMounted] = useState(false); // Prevents hydration errors with DnD
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -23,6 +27,11 @@ export default function TasksPage() {
 
     // The droppableId is our new status (TODO, IN_PROGRESS, DONE)
     moveTask(parseInt(draggableId), destination.droppableId as TaskStatus);
+  };
+
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task);
+    setIsModalOpen(true);
   };
 
   if (!mounted) return null; 
@@ -41,7 +50,15 @@ export default function TasksPage() {
             <h1 className="text-3xl font-bold text-white mb-2">Daily Tasks</h1>
             <p className="text-slate-400">Manage your workload efficiently.</p>
           </div>
-          <DateSelector />
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => { setEditingTask(null); setIsModalOpen(true); }}
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-medium transition"
+            >
+              <Plus size={18} /> New Task
+            </button>
+            <DateSelector />
+          </div>
         </header>
 
         <DragDropContext onDragEnd={onDragEnd}>
@@ -52,11 +69,18 @@ export default function TasksPage() {
                 id={col.id} 
                 title={col.title} 
                 tasks={tasks.filter((t) => t.status === col.id)} 
+                onEditTask={handleEditTask}
               />
             ))}
           </div>
         </DragDropContext>
       </div>
+
+      <TaskModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        existingTask={editingTask} 
+      />
     </div>
   );
 }
