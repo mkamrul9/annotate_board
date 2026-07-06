@@ -6,7 +6,8 @@ import { useTaskStore, TaskStatus, Task } from '@/store/useTaskStore';
 import DateSelector from '@/components/tasks/DateSelector';
 import Column from '@/components/tasks/Column';
 import TaskModal from '@/components/tasks/TaskModal';
-import { Plus, Mic } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import VoiceInput from '@/components/tasks/VoiceInput';
 
 const TaskSkeleton = () => (
   <div className="p-4 mb-3 rounded-lg border border-slate-800 bg-slate-900 shadow-md animate-pulse">
@@ -45,23 +46,6 @@ export default function TasksPage() {
     setIsModalOpen(true);
   };
 
-  const startListening = () => {
-    // @ts-ignore
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Your browser does not support Web Speech API");
-      return;
-    }
-    const recognition = new SpeechRecognition();
-
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      addTask({ title: transcript, priority: 'HIGH', status: 'TODO', tags: ['voice'] });
-    };
-
-    recognition.start();
-  };
-
   if (!mounted) return null; 
 
   const columns: { id: TaskStatus; title: string }[] = [
@@ -79,12 +63,7 @@ export default function TasksPage() {
             <p className="text-slate-400">Manage your workload efficiently.</p>
           </div>
           <div className="flex items-center gap-4">
-            <button 
-              onClick={startListening}
-              className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg font-medium transition border border-slate-700 shadow"
-            >
-              <Mic size={18} className="text-red-400" /> Speak
-            </button>
+            <VoiceInput />
             <button 
               onClick={() => { setEditingTask(null); setIsModalOpen(true); }}
               className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-medium transition"

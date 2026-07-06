@@ -21,9 +21,8 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
 
   // Filter states
   const [brightness, setBrightness] = useState(0);
-  const [contrast, setContrast] = useState(0);
   const [invert, setInvert] = useState(false);
-  const imageNodeRef = useRef<Konva.Image>(null);
+  const imageNodeRef = useRef<any>(null);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -43,7 +42,7 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
     if (img && imageNodeRef.current) {
       imageNodeRef.current.cache();
     }
-  }, [img, dimensions]);
+  }, [img, brightness, invert, dimensions]);
 
   const handleWheel = (e: any) => {
     e.evt.preventDefault();
@@ -134,20 +133,23 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
       )}
 
       {/* Radiologist Toolkit Toolbar */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 bg-slate-950/90 backdrop-blur border border-slate-700 p-3 rounded-lg flex items-center gap-6 shadow-2xl">
-        <div className="flex flex-col">
-          <label className="text-xs text-slate-400 mb-1">Brightness</label>
-          <input type="range" min="-1" max="1" step="0.1" value={brightness} onChange={(e) => setBrightness(parseFloat(e.target.value))} className="w-24 accent-indigo-500" />
+      <div className="flex gap-4 mb-4 p-4 bg-slate-900 rounded-lg border border-slate-800 absolute top-4 left-1/2 -translate-x-1/2 z-10 shadow-2xl min-w-[400px]">
+        <div className="flex items-center gap-2 flex-1">
+          <label className="text-xs text-slate-400 font-medium">Brightness</label>
+          <input 
+            type="range" min="-1" max="1" step="0.05" 
+            value={brightness} onChange={(e) => setBrightness(parseFloat(e.target.value))}
+            className="flex-1 accent-indigo-500"
+          />
         </div>
-        <div className="flex flex-col">
-          <label className="text-xs text-slate-400 mb-1">Contrast</label>
-          <input type="range" min="-100" max="100" step="5" value={contrast} onChange={(e) => setContrast(parseFloat(e.target.value))} className="w-24 accent-indigo-500" />
-        </div>
-        <div className="flex items-center gap-2 mt-2">
-          <input type="checkbox" id="invert" checked={invert} onChange={(e) => setInvert(e.target.checked)} className="accent-indigo-500" />
-          <label htmlFor="invert" className="text-xs text-slate-400">Invert</label>
-        </div>
-        <button onClick={() => { setBrightness(0); setContrast(0); setInvert(false); }} className="text-xs text-indigo-400 hover:text-indigo-300 mt-2 ml-2">Reset</button>
+        <label className="flex items-center gap-2 text-xs text-slate-400 font-medium cursor-pointer">
+          <input 
+            type="checkbox" 
+            checked={invert} onChange={(e) => setInvert(e.target.checked)}
+            className="accent-indigo-500 w-4 h-4"
+          />
+          Invert Colors
+        </label>
       </div>
 
       {dimensions.width > 0 && (
@@ -174,13 +176,11 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
                 image={img} 
                 width={dimensions.width} 
                 height={dimensions.height} 
-                filters={[
-                  Konva.Filters.Brighten,
-                  Konva.Filters.Contrast,
-                  ...(invert ? [Konva.Filters.Invert] : [])
-                ]}
+                filters={[Konva.Filters.Brighten, Konva.Filters.Invert]}
                 brightness={brightness}
-                contrast={contrast}
+                // Konva's invert filter is applied automatically if included in the array, 
+                // so we conditionally add it based on state
+                {...(invert ? { filters: [Konva.Filters.Brighten, Konva.Filters.Invert] } : { filters: [Konva.Filters.Brighten] })}
               />
             )}
 

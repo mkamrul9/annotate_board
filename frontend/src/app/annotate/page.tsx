@@ -36,18 +36,23 @@ export default function AnnotatePage() {
     }
   };
 
-  const handleDownloadDataset = () => {
-    const dataset = images.map(img => ({
-      id: img.id,
-      image_url: img.image,
-      polygons: img.polygons.map(p => p.points)
-    }));
-    
-    const blob = new Blob([JSON.stringify(dataset, null, 2)], { type: 'application/json' });
+  const exportYOLOFormat = () => {
+    if (!activeImage || activeImage.polygons.length === 0) return;
+
+    // YOLO segmentation format: <class-index> <x1> <y1> <x2> <y2> ...
+    // Assuming class index '0' for our single generic class
+    let yoloText = '';
+    activeImage.polygons.forEach((poly) => {
+      const coords = poly.points.map(([x, y]) => `${x.toFixed(6)} ${y.toFixed(6)}`).join(' ');
+      yoloText += `0 ${coords}\n`;
+    });
+
+    // Create a Blob and trigger download
+    const blob = new Blob([yoloText], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'vai_dataset.json';
+    a.download = `image_${activeImage.id}_annotations.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -71,10 +76,10 @@ export default function AnnotatePage() {
             {activeImage && (
               <>
                 <button 
-                  onClick={handleDownloadDataset}
+                  onClick={exportYOLOFormat}
                   className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-5 py-2.5 rounded-lg font-medium transition shadow-lg border border-slate-700"
                 >
-                  <Download size={20} /> Dataset
+                  <Download size={20} /> Export to YOLO
                 </button>
                 <button 
                   onClick={() => autoAnnotate(activeImage.id)}
