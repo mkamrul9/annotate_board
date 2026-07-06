@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Stage, Layer, Image as KonvaImage, Line, Circle } from 'react-konva';
+import Konva from 'konva';
 import useImage from 'use-image';
 import { AnnotationImage, useAnnotationStore } from '@/store/useAnnotationStore';
 
@@ -17,6 +18,32 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
   const { savePolygon, deletePolygon } = useAnnotationStore();
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  // Filter states
+  const [brightness, setBrightness] = useState(0);
+  const [contrast, setContrast] = useState(0);
+  const [invert, setInvert] = useState(false);
+  const imageNodeRef = useRef<Konva.Image>(null);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setCurrentPoints([]);
+      } else if (e.key === 'z' && (e.ctrlKey || e.metaKey)) {
+        setCurrentPoints((prev) => prev.slice(0, -1));
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Cache image for filters once loaded
+  useEffect(() => {
+    if (img && imageNodeRef.current) {
+      imageNodeRef.current.cache();
+    }
+  }, [img, dimensions]);
 
   const handleWheel = (e: any) => {
     e.evt.preventDefault();
@@ -106,6 +133,23 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
         </div>
       )}
 
+      {/* Radiologist Toolkit Toolbar */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 bg-slate-950/90 backdrop-blur border border-slate-700 p-3 rounded-lg flex items-center gap-6 shadow-2xl">
+        <div className="flex flex-col">
+          <label className="text-xs text-slate-400 mb-1">Brightness</label>
+          <input type="range" min="-1" max="1" step="0.1" value={brightness} onChange={(e) => setBrightness(parseFloat(e.target.value))} className="w-24 accent-indigo-500" />
+        </div>
+        <div className="flex flex-col">
+          <label className="text-xs text-slate-400 mb-1">Contrast</label>
+          <input type="range" min="-100" max="100" step="5" value={contrast} onChange={(e) => setContrast(parseFloat(e.target.value))} className="w-24 accent-indigo-500" />
+        </div>
+        <div className="flex items-center gap-2 mt-2">
+          <input type="checkbox" id="invert" checked={invert} onChange={(e) => setInvert(e.target.checked)} className="accent-indigo-500" />
+          <label htmlFor="invert" className="text-xs text-slate-400">Invert</label>
+        </div>
+        <button onClick={() => { setBrightness(0); setContrast(0); setInvert(false); }} className="text-xs text-indigo-400 hover:text-indigo-300 mt-2 ml-2">Reset</button>
+      </div>
+
       {dimensions.width > 0 && (
         <Stage 
           width={dimensions.width} 
@@ -124,7 +168,21 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
         >
           <Layer>
             {/* 1. Render the Background Image (scaled to fit) */}
-            {img && <KonvaImage image={img} width={dimensions.width} height={dimensions.height} />}
+            {img && (
+              <KonvaImage 
+                ref={imageNodeRef}
+                image={img} 
+                width={dimensions.width} 
+                height={dimensions.height} 
+                filters={[
+                  Konva.Filters.Brighten,
+                  Konva.Filters.Contrast,
+                  ...(invert ? [Konva.Filters.Invert] : [])
+                ]}
+                brightness={brightness}
+                contrast={contrast}
+              />
+            )}
 
             {/* 2. Render Saved Polygons from Database */}
             {imageObj.polygons.map((poly, i) => (

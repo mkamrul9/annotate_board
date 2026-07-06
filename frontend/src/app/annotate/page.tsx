@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAnnotationStore } from '@/store/useAnnotationStore';
 import DrawingCanvas from '@/components/annotate/DrawingCanvas';
-import { UploadCloud, ChevronLeft, ChevronRight, Wand2 } from 'lucide-react';
+import { UploadCloud, ChevronLeft, ChevronRight, Wand2, Download } from 'lucide-react';
 
 export default function AnnotatePage() {
   const searchParams = useSearchParams();
@@ -36,6 +36,24 @@ export default function AnnotatePage() {
     }
   };
 
+  const handleDownloadDataset = () => {
+    const dataset = images.map(img => ({
+      id: img.id,
+      image_url: img.image,
+      polygons: img.polygons.map(p => p.points)
+    }));
+    
+    const blob = new Blob([JSON.stringify(dataset, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'vai_dataset.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const activeImage = images[currentIndex];
 
   return (
@@ -51,14 +69,22 @@ export default function AnnotatePage() {
           
           <div className="flex gap-4">
             {activeImage && (
-              <button 
-                onClick={() => autoAnnotate(activeImage.id)}
-                disabled={loading}
-                className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-lg font-medium transition shadow-lg disabled:opacity-50"
-              >
-                <Wand2 size={20} /> 
-                {loading ? 'Analyzing...' : 'Auto-Annotate'}
-              </button>
+              <>
+                <button 
+                  onClick={handleDownloadDataset}
+                  className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-5 py-2.5 rounded-lg font-medium transition shadow-lg border border-slate-700"
+                >
+                  <Download size={20} /> Dataset
+                </button>
+                <button 
+                  onClick={() => autoAnnotate(activeImage.id)}
+                  disabled={loading}
+                  className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-lg font-medium transition shadow-lg disabled:opacity-50"
+                >
+                  <Wand2 size={20} /> 
+                  {loading ? 'Analyzing...' : 'Auto-Annotate'}
+                </button>
+              </>
             )}
             <div>
               <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />

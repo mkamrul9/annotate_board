@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { format } from 'date-fns';
 import api from '@/lib/api';
+import { toast } from 'sonner';
 
 export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'DONE';
 export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH';
@@ -46,6 +47,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       set({ tasks: response.data, loading: false });
     } catch (error) {
       console.error('Failed to fetch tasks', error);
+      toast.error('Failed to load tasks');
       set({ loading: false });
     }
   },
@@ -63,9 +65,11 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     try {
       // Background API request
       await api.patch(`tasks/${taskId}/`, { status: newStatus });
+      toast.success('Task updated');
     } catch (error) {
       // Rollback if the API fails
       console.error('Failed to update task status', error);
+      toast.error('Failed to update task status');
       set({ tasks: originalTasks });
     }
   },
@@ -76,8 +80,10 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       // Merge the selected date automatically so tasks drop into the current view
       await api.post('tasks/', { ...taskData, due_date: selectedDate });
       await fetchTasks(); // Re-fetch to get the assigned ID from the backend
+      toast.success('Task created');
     } catch (error) {
       console.error('Failed to add task', error);
+      toast.error('Failed to create task');
     }
   },
 
@@ -87,9 +93,11 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     set({ tasks: originalTasks.map((t) => t.id === taskId ? { ...t, ...taskData } : t) as Task[] });
     try {
       await api.patch(`tasks/${taskId}/`, taskData);
+      toast.success('Task saved');
     } catch (error) {
       set({ tasks: originalTasks });
       console.error('Failed to update task', error);
+      toast.error('Failed to save task');
     }
   },
 
@@ -98,9 +106,11 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     set({ tasks: originalTasks.filter((t) => t.id !== taskId) });
     try {
       await api.delete(`tasks/${taskId}/`);
+      toast.success('Task deleted');
     } catch (error) {
       set({ tasks: originalTasks });
       console.error('Failed to delete task', error);
+      toast.error('Failed to delete task');
     }
   },
 }));

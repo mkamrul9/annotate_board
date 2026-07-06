@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import api from '@/lib/api';
+import { toast } from 'sonner';
 
 export interface Polygon {
   id?: number;
@@ -38,6 +39,7 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
       set({ images: response.data, loading: false });
     } catch (error) {
       console.error('Failed to fetch images', error);
+      toast.error('Failed to load images');
       set({ loading: false });
     }
   },
@@ -50,8 +52,10 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       set((state) => ({ images: [response.data, ...state.images], currentIndex: 0 }));
+      toast.success('Image uploaded');
     } catch (error) {
       console.error('Upload failed', error);
+      toast.error('Upload failed');
     }
   },
 
@@ -63,8 +67,10 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
           img.id === imageId ? { ...img, polygons: [...img.polygons, response.data] } : img
         ),
       }));
+      toast.success('Polygon saved');
     } catch (error) {
       console.error('Failed to save polygon', error);
+      toast.error('Failed to save polygon');
     }
   },
 
@@ -78,8 +84,10 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
             : img
         ),
       }));
+      toast.success('Polygon deleted');
     } catch (error) {
       console.error('Failed to delete polygon', error);
+      toast.error('Failed to delete polygon');
     }
   },
 
@@ -98,8 +106,10 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
         ),
         loading: false
       }));
+      toast.success('AI Annotation complete');
     } catch (error) {
       console.error('Auto-annotation failed', error);
+      toast.error('AI Annotation failed');
       set({ loading: false });
     }
   }
