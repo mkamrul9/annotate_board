@@ -27,10 +27,16 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        e.preventDefault();
+        setCurrentPoints((prev) => {
+          if (prev.length === 0) return prev;
+          return prev.slice(0, -1);
+        });
+      }
+      
       if (e.key === 'Escape') {
         setCurrentPoints([]);
-      } else if (e.key === 'z' && (e.ctrlKey || e.metaKey)) {
-        setCurrentPoints((prev) => prev.slice(0, -1));
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -168,8 +174,8 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
           }}
           onContextMenu={(e) => e.evt.preventDefault()}
         >
-          <Layer>
-            {/* 1. Render the Background Image (scaled to fit) */}
+          {/* Layer 1: The Image. listening={false} turns off expensive hit-graph calculations */}
+          <Layer listening={false}>
             {img && (
               <KonvaImage 
                 ref={imageNodeRef}
@@ -183,13 +189,15 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
                 {...(invert ? { filters: [Konva.Filters.Brighten, Konva.Filters.Invert] } : { filters: [Konva.Filters.Brighten] })}
               />
             )}
+          </Layer>
 
-            {/* 2. Render Saved Polygons from Database */}
-            {imageObj.polygons.map((poly, i) => (
+          {/* Layer 2: Saved Polygons */}
+          <Layer>
+            {imageObj.polygons.map((poly) => (
               <Line
-                key={poly.id || i}
+                key={poly.id}
                 points={denormalizePoints(poly.points)}
-                fill="rgba(99, 102, 241, 0.3)" // Indigo transparent
+                fill="rgba(99, 102, 241, 0.3)"
                 stroke="#6366f1"
                 strokeWidth={2}
                 closed
@@ -201,27 +209,29 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
                 }}
               />
             ))}
+          </Layer>
 
-            {/* 3. Render the currently drawing polygon */}
+          {/* Layer 3: Active Drawing. Isolated re-renders! */}
+          <Layer listening={false}>
             {currentPoints.length > 0 && (
-              <Line
-                points={denormalizePoints(currentPoints)}
-                stroke="#22c55e" // Green while drawing
-                strokeWidth={2}
-                closed={false}
-              />
+              <>
+                <Line
+                  points={denormalizePoints(currentPoints)}
+                  stroke="#22c55e"
+                  strokeWidth={2}
+                  closed={false}
+                />
+                {currentPoints.map((pt, i) => (
+                  <Circle
+                    key={i}
+                    x={pt[0] * dimensions.width}
+                    y={pt[1] * dimensions.height}
+                    radius={4}
+                    fill="#22c55e"
+                  />
+                ))}
+              </>
             )}
-            
-            {/* Draw dots at vertices for visual feedback */}
-            {currentPoints.map((pt, i) => (
-              <Circle
-                key={i}
-                x={pt[0] * dimensions.width}
-                y={pt[1] * dimensions.height}
-                radius={4}
-                fill="#22c55e"
-              />
-            ))}
           </Layer>
         </Stage>
       )}

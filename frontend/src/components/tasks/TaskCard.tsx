@@ -1,3 +1,4 @@
+import React from 'react';
 import { Task } from '@/store/useTaskStore';
 import { Draggable } from '@hello-pangea/dnd';
 import Link from 'next/link';
@@ -9,7 +10,7 @@ interface TaskCardProps {
   onEdit?: (task: Task) => void;
 }
 
-export default function TaskCard({ task, index, onEdit }: TaskCardProps) {
+function TaskCard({ task, index, onEdit }: TaskCardProps) {
   const priorityColors = {
     LOW: 'bg-green-500/20 text-green-400 border-green-500/30',
     MEDIUM: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
@@ -66,3 +67,5 @@ export default function TaskCard({ task, index, onEdit }: TaskCardProps) {
     </Draggable>
   );
 }
+
+export default React.memo(TaskCard);

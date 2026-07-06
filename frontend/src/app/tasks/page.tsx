@@ -6,7 +6,7 @@ import { useTaskStore, TaskStatus, Task } from '@/store/useTaskStore';
 import DateSelector from '@/components/tasks/DateSelector';
 import Column from '@/components/tasks/Column';
 import TaskModal from '@/components/tasks/TaskModal';
-import { Plus } from 'lucide-react';
+import { Plus, Cloud, CloudOff, RefreshCw } from 'lucide-react';
 import VoiceInput from '@/components/tasks/VoiceInput';
 
 const TaskSkeleton = () => (
@@ -20,8 +20,18 @@ const TaskSkeleton = () => (
   </div>
 );
 
+function SyncIndicator({ status }: { status: 'idle' | 'syncing' | 'error' }) {
+  if (status === 'syncing') {
+    return <span className="flex items-center gap-1 text-xs text-indigo-400"><RefreshCw size={14} className="animate-spin" /> Saving...</span>;
+  }
+  if (status === 'error') {
+    return <span className="flex items-center gap-1 text-xs text-red-400"><CloudOff size={14} /> Offline</span>;
+  }
+  return <span className="flex items-center gap-1 text-xs text-slate-500"><Cloud size={14} /> Synced</span>;
+}
+
 export default function TasksPage() {
-  const { tasks, fetchTasks, moveTask, addTask, loading } = useTaskStore();
+  const { tasks, fetchTasks, moveTask, loading, syncStatus } = useTaskStore();
   const [mounted, setMounted] = useState(false); // Prevents hydration errors with DnD
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -59,7 +69,10 @@ export default function TasksPage() {
       <div className="max-w-7xl mx-auto">
         <header className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Daily Tasks</h1>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-3xl font-bold text-white">Daily Tasks</h1>
+              <SyncIndicator status={syncStatus} />
+            </div>
             <p className="text-slate-400">Manage your workload efficiently.</p>
           </div>
           <div className="flex items-center gap-4">
