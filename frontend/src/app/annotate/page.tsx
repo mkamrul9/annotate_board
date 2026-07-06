@@ -3,10 +3,10 @@
 import { useEffect, useRef } from 'react';
 import { useAnnotationStore } from '@/store/useAnnotationStore';
 import DrawingCanvas from '@/components/annotate/DrawingCanvas';
-import { UploadCloud, ChevronLeft, ChevronRight } from 'lucide-react';
+import { UploadCloud, ChevronLeft, ChevronRight, Wand2 } from 'lucide-react';
 
 export default function AnnotatePage() {
-  const { images, currentIndex, loading, fetchImages, uploadImage, setCurrentIndex } = useAnnotationStore();
+  const { images, currentIndex, loading, fetchImages, uploadImage, setCurrentIndex, autoAnnotate } = useAnnotationStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -32,14 +32,26 @@ export default function AnnotatePage() {
             <p className="text-slate-400 mt-1">Click to draw shapes. Right-click a shape to delete it.</p>
           </div>
           
-          <div>
-            <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
-            <button 
-              onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-lg font-medium transition shadow-lg"
-            >
-              <UploadCloud size={20} /> Upload Image
-            </button>
+          <div className="flex gap-4">
+            {activeImage && (
+              <button 
+                onClick={() => autoAnnotate(activeImage.id)}
+                disabled={loading}
+                className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-lg font-medium transition shadow-lg disabled:opacity-50"
+              >
+                <Wand2 size={20} /> 
+                {loading ? 'Analyzing...' : 'Auto-Annotate'}
+              </button>
+            )}
+            <div>
+              <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
+              <button 
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-lg font-medium transition shadow-lg"
+              >
+                <UploadCloud size={20} /> Upload Image
+              </button>
+            </div>
           </div>
         </div>
 

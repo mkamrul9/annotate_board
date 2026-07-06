@@ -21,6 +21,7 @@ interface AnnotationState {
   setCurrentIndex: (index: number) => void;
   savePolygon: (imageId: number, points: number[][]) => Promise<void>;
   deletePolygon: (polygonId: number, imageId: number) => Promise<void>;
+  autoAnnotate: (imageId: number) => Promise<void>;
 }
 
 export const useAnnotationStore = create<AnnotationState>((set, get) => ({
@@ -81,4 +82,25 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
       console.error('Failed to delete polygon', error);
     }
   },
+
+  autoAnnotate: async (imageId: number) => {
+    set({ loading: true });
+    try {
+      const response = await api.post(`annotations/images/${imageId}/auto_annotate/`);
+      const newPolygons = response.data;
+      
+      // Update state with the newly generated polygons
+      set((state) => ({
+        images: state.images.map((img) => 
+          img.id === imageId 
+            ? { ...img, polygons: [...img.polygons, ...newPolygons] } 
+            : img
+        ),
+        loading: false
+      }));
+    } catch (error) {
+      console.error('Auto-annotation failed', error);
+      set({ loading: false });
+    }
+  }
 }));

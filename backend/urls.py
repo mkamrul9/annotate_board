@@ -7,8 +7,7 @@ from rest_framework.authtoken.views import obtain_auth_token
 urlpatterns = [
     path('admin/', admin.site.urls),
     
-    # We will use DRF's built-in token auth for the simple login requirement
-    path('api/auth/', include('rest_framework.urls')), 
+    # We use DRF's built-in token auth for the simple login requirement
     path('api/auth/login/', obtain_auth_token, name='api_token_auth'),
     
     path('api/tasks/', include('tasks.urls')),
