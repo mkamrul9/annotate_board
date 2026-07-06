@@ -1,58 +1,49 @@
-# Bio-Tech Radiology Assessment
+# VAI Radiology Assessment: Frontend 
 
-This is a full-stack web application designed for a Bio-Tech radiology context. It features a responsive drag-and-drop Kanban board for task management and an advanced HTML5 Canvas tool for annotating medical images with polygon regions of interest.
+A high-performance, modular Next.js application combining a responsive Kanban board with a medical-grade image annotation canvas.
 
-## Tech Stack Overview
+## ⚔️ The Villain: The Aspect-Ratio Paradox
+The biggest villain in building the `/annotate` tool wasn't drawing the polygons—it was **persistence across screen sizes**. If I drew a polygon on a 1080p monitor and saved the exact $X$ and $Y$ pixel coordinates, those points would render completely off-target when viewed on a 13-inch laptop. 
 
-### Frontend: Next.js (App Router)
-*   **Why Next.js?**: Chosen for its robust App Router, excellent developer experience, and seamless integration with Tailwind CSS. It allows us to easily scale the application with mixed server-side and client-side rendering where appropriate.
-*   **State Management (Zustand)**: We used Zustand over Redux. It provides a lean, boilerplate-free way to handle global state (like our Authentication tokens and Task stores) without sacrificing performance.
-*   **Styling (Tailwind CSS)**: Used to rapidly build a cohesive, custom "Bio-Tech Dark Mode" aesthetic (slate-950/900 palette).
-*   **Drag and Drop**: Utilized `@hello-pangea/dnd` (a modern, maintained fork of react-beautiful-dnd) to create the Kanban board.
-*   **Annotation Engine**: Used `react-konva` to tap directly into the HTML5 canvas, enabling performant, lag-free polygon drawing over large medical images.
+**The Weapon:** Coordinate Normalization. 
+Instead of saving raw pixels, I calculated the vertices as percentages of the current canvas bounding box (values between `0.0` and `1.0`). When the image is rendered on a new screen, the engine scales these normalized floats back into the current viewport dimensions. The polygons lock perfectly onto the image anatomy, regardless of aspect ratio or window size.
 
-### Backend: Django & Django Rest Framework (DRF)
-*   **Why Django?**: Django provides an incredibly robust, secure foundation. DRF's `ModelViewSet` allowed us to spin up secure, scalable CRUD endpoints rapidly.
-*   **Authentication**: Implemented Django Token Authentication for stateless, decoupled security perfectly suited for a separate Next.js frontend.
-*   **Data Flexibility**: Utilized `JSONField` in PostgreSQL/SQLite to store dynamic arrays (like task tags) and normalized polygon coordinate matrices without needing complex relational joins.
+## 🛠 Tech Stack
+* **Framework:** Next.js 14 (App Router)
+* **Language:** TypeScript 
+* **State Management:** Zustand (Zero-boilerplate, highly performant)
+* **Canvas Engine:** React-Konva
+* **Drag-and-Drop:** @hello-pangea/dnd
 
-## Key Architectural Decisions
+## 🚀 How to Run Locally
 
-1.  **Optimistic UI Updates**: 
-    To ensure the Kanban board feels instantaneous (zero-latency), the frontend Zustand store updates the UI *synchronously* before the API request completes. If the backend patch fails, the UI automatically rolls back.
-2.  **Normalized Coordinate System**: 
-    When drawing polygons on the medical images, we do not store raw pixel values. Instead, coordinates are normalized to percentages (0.0 to 1.0). This ensures that an annotation drawn on a 4K desktop monitor will render flawlessly and in the exact same proportional position on a 13-inch laptop screen.
-3.  **Strict Data Isolation**: 
-    Security is enforced at the database level. API viewsets strictly filter queries by the authenticated user (`Task.objects.filter(user=self.request.user)`). Even if a malicious request hits the API directly, a user can never access or modify another user's data.
+**Requirements:** Node.js (v18.17.0 or higher)
 
-## Local Setup Instructions
+1. Clone the repository and navigate to the frontend directory.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Create a `.env.local` file and add the local API URL:
+   ```env
+   NEXT_PUBLIC_API_URL=http://localhost:8000/api/
+   ```
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
 
-### 1. Start the Django Backend
-```bash
-# Create and activate a virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows use: venv\Scripts\activate
+### 3. Deployment Strategy
 
-# Install dependencies
-pip install django djangorestframework django-cors-headers pillow
-
-# Run migrations and create a user
-python manage.py migrate
-python manage.py createsuperuser
-
-# Start the server
-python manage.py runserver
-```
-
-### 2. Start the Next.js Frontend
-```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start the development server
-npm run dev
-```
-
-The application will be available at `http://localhost:3000`. Log in using the superuser credentials you created.
+*   **Frontend (Vercel):** Just push your Next.js code to GitHub, connect the repo to Vercel, and add your deployed backend's URL as the `NEXT_PUBLIC_API_URL` environment variable.
+*   **Backend (Render):** Render is the easiest platform for Django. 
+    1. Add a `requirements.txt` (`pip freeze > requirements.txt`).
+    2. Add a `build.sh` script to automate migrations:
+       ```bash
+       #!/usr/bin/env bash
+       set -o errexit
+       pip install -r requirements.txt
+       python manage.py collectstatic --no-input
+       python manage.py migrate
+       ```
+    3. Connect your backend repo to Render as a "Web Service", set the build command to `./backend/build.sh`, and the start command to `gunicorn backend.wsgi`.
