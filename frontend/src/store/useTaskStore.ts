@@ -12,6 +12,8 @@ export interface Task {
   status: TaskStatus;
   due_date: string;
   tags: string[];
+  annotation_image?: number | null;
+  image_url?: string | null;
 }
 
 interface TaskState {

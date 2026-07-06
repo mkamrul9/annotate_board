@@ -1,5 +1,7 @@
 import { Task } from '@/store/useTaskStore';
 import { Draggable } from '@hello-pangea/dnd';
+import Link from 'next/link';
+import { Image as ImageIcon } from 'lucide-react';
 
 interface TaskCardProps {
   task: Task;
@@ -39,6 +41,24 @@ export default function TaskCard({ task, index, onEdit }: TaskCardProps) {
                   #{tag}
                 </span>
               ))}
+            </div>
+          )}
+
+          {task.image_url && (
+            <div className="mt-4 pt-4 border-t border-slate-800" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between bg-slate-950 p-2 rounded-md">
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <img src={task.image_url} alt="Attached scan" className="w-8 h-8 object-cover rounded opacity-80" />
+                  <span className="text-xs text-slate-400 truncate">Scan attached</span>
+                </div>
+                
+                {/* This link teleports the user to the annotation tool with the specific image */}
+                <Link href={`/annotate?imageId=${task.annotation_image}`}>
+                  <button className="flex items-center gap-1 bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/40 hover:text-indigo-300 px-2 py-1 rounded text-xs transition">
+                    <ImageIcon size={14} /> Annotate
+                  </button>
+                </Link>
+              </div>
             </div>
           )}
         </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Task, useTaskStore } from '@/store/useTaskStore';
+import { useAnnotationStore } from '@/store/useAnnotationStore';
 import { X, Trash } from 'lucide-react';
 
 interface TaskModalProps {
@@ -10,10 +11,17 @@ interface TaskModalProps {
 
 export default function TaskModal({ isOpen, onClose, existingTask }: TaskModalProps) {
   const { addTask, updateTask, deleteTask } = useTaskStore();
+  const { images, fetchImages } = useAnnotationStore();
   
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState<Task['priority']>('MEDIUM');
   const [tagsInput, setTagsInput] = useState('');
+  const [selectedImage, setSelectedImage] = useState<number | ''>('');
+
+  // Fetch images when modal opens so the dropdown is populated
+  useEffect(() => {
+    if (isOpen && images.length === 0) fetchImages();
+  }, [isOpen, fetchImages, images.length]);
 
   // Populate form if editing
   useEffect(() => {
@@ -21,10 +29,12 @@ export default function TaskModal({ isOpen, onClose, existingTask }: TaskModalPr
       setTitle(existingTask.title);
       setPriority(existingTask.priority);
       setTagsInput(existingTask.tags.join(', '));
+      setSelectedImage(existingTask.annotation_image || '');
     } else {
       setTitle('');
       setPriority('MEDIUM');
       setTagsInput('');
+      setSelectedImage('');
     }
   }, [existingTask, isOpen]);
 
@@ -33,11 +43,12 @@ export default function TaskModal({ isOpen, onClose, existingTask }: TaskModalPr
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const tags = tagsInput.split(',').map((t) => t.trim()).filter(Boolean);
+    const annotation_image = selectedImage === '' ? null : selectedImage;
     
     if (existingTask) {
-      await updateTask(existingTask.id, { title, priority, tags });
+      await updateTask(existingTask.id, { title, priority, tags, annotation_image });
     } else {
-      await addTask({ title, priority, status: 'TODO', tags });
+      await addTask({ title, priority, status: 'TODO', tags, annotation_image });
     }
     onClose();
   };
@@ -75,6 +86,20 @@ export default function TaskModal({ isOpen, onClose, existingTask }: TaskModalPr
           <div>
             <label className="block text-sm text-slate-400 mb-1">Tags (comma separated)</label>
             <input type="text" value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} placeholder="urgent, frontend, bug" className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white focus:border-indigo-500 outline-none" />
+          </div>
+
+          <div>
+            <label className="block text-sm text-slate-400 mb-1">Attach Scan (Optional)</label>
+            <select 
+              value={selectedImage} 
+              onChange={(e) => setSelectedImage(Number(e.target.value) || '')} 
+              className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white focus:border-indigo-500 outline-none"
+            >
+              <option value="">-- No image attached --</option>
+              {images.map((img) => (
+                <option key={img.id} value={img.id}>Image #{img.id}</option>
+              ))}
+            </select>
           </div>
 
           <div className="flex justify-between pt-4 mt-6 border-t border-slate-800">

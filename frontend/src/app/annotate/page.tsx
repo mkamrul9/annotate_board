@@ -1,17 +1,34 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useAnnotationStore } from '@/store/useAnnotationStore';
 import DrawingCanvas from '@/components/annotate/DrawingCanvas';
 import { UploadCloud, ChevronLeft, ChevronRight, Wand2 } from 'lucide-react';
 
 export default function AnnotatePage() {
+  const searchParams = useSearchParams();
+  const targetImageId = searchParams.get('imageId');
+  
   const { images, currentIndex, loading, fetchImages, uploadImage, setCurrentIndex, autoAnnotate } = useAnnotationStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    fetchImages();
-  }, [fetchImages]);
+    // 1. Fetch images if we haven't already
+    if (images.length === 0) {
+      fetchImages();
+    }
+  }, [fetchImages, images.length]);
+
+  useEffect(() => {
+    // 2. Once images are loaded, if there's a target ID in the URL, slide directly to it
+    if (targetImageId && images.length > 0) {
+      const index = images.findIndex((img) => img.id === Number(targetImageId));
+      if (index !== -1 && index !== currentIndex) {
+        setCurrentIndex(index);
+      }
+    }
+  }, [targetImageId, images, currentIndex, setCurrentIndex]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
