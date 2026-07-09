@@ -4,6 +4,7 @@ import { useAnnotationStore } from '@/store/useAnnotationStore';
 import { X, Trash2, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import ConfirmDialog from '@/components/layout/ConfirmDialog';
 
 interface TaskModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export default function TaskModal({ isOpen, onClose, existingTask }: TaskModalPr
   const [subtasks, setSubtasks] = useState<{ id: string; title: string; done: boolean }[]>([]);
   const [newSubtask, setNewSubtask] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   // Fetch images when modal opens so the dropdown is populated
   useEffect(() => {
@@ -62,25 +64,20 @@ export default function TaskModal({ isOpen, onClose, existingTask }: TaskModalPr
 
   const handleDelete = () => {
     if (!existingTask) return;
-    toast.error(`Delete "${existingTask.title}"?`, {
-      description: "This cannot be undone.",
-      action: {
-        label: 'Delete',
-        onClick: async () => {
-          await deleteTask(existingTask.id);
-          onClose();
-        }
-      },
-      cancel: {
-        label: 'Cancel',
-        onClick: () => {}
-      }
-    });
+    setConfirmDeleteOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!existingTask) return;
+    await deleteTask(existingTask.id);
+    setConfirmDeleteOpen(false);
+    onClose();
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
+    <>
+      <AnimatePresence>
+        {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
           <motion.div
@@ -299,5 +296,16 @@ export default function TaskModal({ isOpen, onClose, existingTask }: TaskModalPr
         </div>
       )}
     </AnimatePresence>
+
+    <ConfirmDialog
+      isOpen={confirmDeleteOpen}
+      onClose={() => setConfirmDeleteOpen(false)}
+      onConfirm={confirmDelete}
+      title={`Delete "${existingTask?.title}"?`}
+      description="This action cannot be undone. The task and all its subtasks will be permanently removed."
+      confirmLabel="Delete Task"
+      variant="danger"
+    />
+    </>
   );
 }

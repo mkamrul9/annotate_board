@@ -21,7 +21,7 @@ export default function Column({ id, title, tasks, onEditTask }: ColumnProps) {
   const accent = COLUMN_ACCENTS[id];
 
   return (
-    <div className="flex flex-col bg-slate-50/50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl w-full min-h-[560px] overflow-hidden transition-colors">
+    <div className="flex flex-col bg-slate-100/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 rounded-2xl w-full min-h-[560px] overflow-hidden transition-colors shadow-sm dark:shadow-none">
       {/* Column header */}
       <div className="flex items-center justify-between px-4 py-3.5 border-b border-slate-200 dark:border-slate-800/60 bg-white/50 dark:bg-transparent">
         <div className="flex items-center gap-2">

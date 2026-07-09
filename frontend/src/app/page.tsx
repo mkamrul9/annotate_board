@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import api from '@/lib/api';
-import { Activity, Eye, EyeOff, ArrowRight, UserPlus } from 'lucide-react';
+import { Activity, Eye, EyeOff, ArrowRight, UserPlus, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 type Mode = 'login' | 'register';
 
@@ -34,10 +35,10 @@ export default function LoginPage() {
     try {
       if (mode === 'login') {
         const response = await api.post('auth/login/', { username, password });
-        login(response.data.token);
+        login(response.data.token, username);
       } else {
         const response = await api.post('auth/register/', { username, password });
-        login(response.data.token);
+        login(response.data.token, response.data.username || username);
       }
       router.push('/tasks');
     } catch (err: any) {
@@ -56,6 +57,13 @@ export default function LoginPage() {
     setError('');
     setUsername('');
     setPassword('');
+  };
+
+  const fillDemo = () => {
+    setMode('login');
+    setUsername('demo');
+    setPassword('Demo@1234');
+    toast.info('Demo credentials filled — click Sign In!', { duration: 3000 });
   };
 
   return (
@@ -83,9 +91,9 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-2xl mb-5">
             <Activity size={26} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">VAI Radiology Portal</h1>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Annotate Board</h1>
           <p className="mt-1.5 text-sm text-slate-400">
-            {mode === 'login' ? 'Sign in to your clinical workspace' : 'Create your account to get started'}
+            {mode === 'login' ? 'Sign in to your workspace' : 'Create your account to get started'}
           </p>
         </div>
 
@@ -191,6 +199,21 @@ export default function LoginPage() {
               </>
             )}
           </button>
+
+          {/* Demo quick-fill */}
+          <div className="pt-3 border-t border-slate-700/50 mt-2">
+            <button
+              type="button"
+              onClick={fillDemo}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:text-white bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700/50 hover:border-indigo-500/50 transition-all"
+            >
+              <Zap size={15} className="text-yellow-400" />
+              Try Demo Account
+            </button>
+            <p className="text-center text-xs text-slate-600 mt-2">
+              Login: <span className="text-slate-400 font-mono">demo</span> / <span className="text-slate-400 font-mono">Demo@1234</span>
+            </p>
+          </div>
         </form>
       </motion.div>
     </div>

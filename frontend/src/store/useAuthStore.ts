@@ -2,10 +2,11 @@ import { create } from 'zustand';
 
 interface AuthState {
   token: string | null;
+  username: string;
   isAuthenticated: boolean;
   compactMode: boolean;
   autoSave: boolean;
-  login: (token: string) => void;
+  login: (token: string, username?: string) => void;
   logout: () => void;
   toggleCompactMode: () => void;
   toggleAutoSave: (value?: boolean) => void;
@@ -14,18 +15,21 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   // Initialize from localStorage if available (runs on client-side)
   token: typeof window !== 'undefined' ? localStorage.getItem('token') : null,
+  username: typeof window !== 'undefined' ? localStorage.getItem('username') || '' : '',
   isAuthenticated: typeof window !== 'undefined' ? !!localStorage.getItem('token') : false,
   compactMode: typeof window !== 'undefined' ? localStorage.getItem('compactMode') === 'true' : false,
   autoSave: typeof window !== 'undefined' ? localStorage.getItem('autoSave') !== 'false' : true, // default true
   
-  login: (token: string) => {
+  login: (token: string, username?: string) => {
     localStorage.setItem('token', token);
-    set({ token, isAuthenticated: true });
+    if (username) localStorage.setItem('username', username);
+    set({ token, username: username || '', isAuthenticated: true });
   },
   
   logout: () => {
     localStorage.removeItem('token');
-    set({ token: null, isAuthenticated: false });
+    localStorage.removeItem('username');
+    set({ token: null, username: '', isAuthenticated: false });
   },
 
   toggleCompactMode: () => {

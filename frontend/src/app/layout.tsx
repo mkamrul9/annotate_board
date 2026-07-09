@@ -20,9 +20,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "VAI Radiology Portal",
-  description: "Professional radiology task management and AI-powered image annotation platform for clinical teams.",
-  keywords: ["radiology", "medical imaging", "annotation", "task management", "AI"],
+  title: "Annotate Board",
+  description: "Professional medical image annotation and task management platform for clinical teams.",
+  keywords: ["annotation", "medical imaging", "kanban", "task management", "AI", "radiology"],
 };
 
 export default function RootLayout({

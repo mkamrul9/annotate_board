@@ -42,7 +42,7 @@ function TaskCard({ task, index, onEdit }: TaskCardProps) {
               ? 'border-indigo-500 shadow-2xl scale-[1.02] opacity-95 rotate-1'
               : isOverdue 
                 ? 'border-red-400 dark:border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.15)]'
-                : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 shadow-sm hover:shadow-md'
+                : 'border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-slate-700 shadow-sm hover:shadow-lg dark:hover:shadow-md'
           }`}
         >
           {/* Title row */}
@@ -79,9 +79,9 @@ function TaskCard({ task, index, onEdit }: TaskCardProps) {
                 <span>Checklist</span>
                 <span>{completedSubtasks}/{totalSubtasks}</span>
               </div>
-              <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-950 rounded-full overflow-hidden">
+              <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-indigo-500 transition-all duration-500" 
+                  className="h-full bg-gradient-to-r from-indigo-500 to-indigo-400 transition-all duration-500 rounded-full" 
                   style={{ width: `${progressPercentage}%` }} 
                 />
               </div>

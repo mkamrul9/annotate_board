@@ -16,10 +16,10 @@ export default function Footer() {
               <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/20">
                 <Activity size={18} />
               </div>
-              <span className="font-bold text-lg text-slate-900 dark:text-white tracking-tight">VAI Radiology</span>
+              <span className="font-bold text-lg text-slate-900 dark:text-white tracking-tight">Annotate Board</span>
             </div>
             <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed">
-              Accelerating clinical workflows through AI-powered image annotation and high-precision task management.
+              Accelerating annotation workflows through AI-powered image labeling and high-precision task management.
             </p>
             <div className="flex items-center gap-2 mt-2">
               <span className="relative flex h-2.5 w-2.5">
