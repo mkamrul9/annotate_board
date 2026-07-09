@@ -8,10 +8,9 @@ import { User, CheckCircle, Image as ImageIcon, LogOut, X } from 'lucide-react';
 export default function ProfileModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const { tasks } = useTaskStore();
   const { images } = useAnnotationStore();
-  const { logout, compactMode, toggleCompactMode } = useAuthStore();
+  const { logout, compactMode, toggleCompactMode, autoSave, toggleAutoSave } = useAuthStore();
   
   const [activeTab, setActiveTab] = useState<'stats' | 'settings'>('stats');
-  const [autoSave, setAutoSave] = useState(true);
 
   // Quick stats derived from client state
   const completedTasks = tasks.filter(t => t.status === 'DONE').length;
@@ -99,10 +98,10 @@ export default function ProfileModal({ isOpen, onClose }: { isOpen: boolean; onC
                       <span className="block text-sm font-medium text-slate-900 dark:text-white">Auto-Save Annotations</span>
                       <span className="block text-xs text-slate-500 mt-0.5">Save after every shape drawn</span>
                     </div>
-                    <div className={`w-10 h-6 rounded-full transition-colors flex items-center px-1 ${autoSave ? 'bg-indigo-500' : 'bg-slate-700'}`}>
+                    <div className={`w-10 h-6 rounded-full transition-colors flex items-center px-1 ${autoSave ? 'bg-indigo-500' : 'bg-slate-300 dark:bg-slate-700'}`}>
                       <div className={`w-4 h-4 rounded-full bg-white transition-transform ${autoSave ? 'translate-x-4' : 'translate-x-0'}`} />
                     </div>
-                    <input type="checkbox" className="hidden" checked={autoSave} onChange={(e) => setAutoSave(e.target.checked)} />
+                    <input type="checkbox" className="hidden" checked={autoSave} onChange={() => toggleAutoSave()} />
                   </label>
                 </div>
               )}

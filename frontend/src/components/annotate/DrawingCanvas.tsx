@@ -8,6 +8,7 @@ import { AnnotationImage, useAnnotationStore } from '@/store/useAnnotationStore'
 import { ZoomIn, ZoomOut, RotateCcw, BoxSelect, Pentagon, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useShortcuts } from '@/hooks/useShortcuts';
+import { useAuthStore } from '@/store/useAuthStore';
 import ShortcutModal from '@/components/layout/ShortcutModal';
 
 interface DrawingCanvasProps {
@@ -26,6 +27,7 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
   const [isShortcutModalOpen, setIsShortcutModalOpen] = useState(false);
   
   const { savePolygon, deletePolygon, restorePolygon } = useAnnotationStore();
+  const { autoSave } = useAuthStore();
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
@@ -173,6 +175,16 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
       const normalizedY = adjustedY / fitted.height;
 
       if (drawMode === 'polygon') {
+        if (currentPoints.length >= 2 && autoSave) {
+          const firstPt = currentPoints[0];
+          const dist = Math.hypot(firstPt[0] - normalizedX, firstPt[1] - normalizedY);
+          // If clicked near the first point (e.g. within 2% of image dimensions), auto-close and save
+          if (dist < 0.02) {
+            savePolygon(imageObj.id, currentPoints);
+            setCurrentPoints([]);
+            return;
+          }
+        }
         setCurrentPoints((prev) => [...prev, [normalizedX, normalizedY]]);
       } else {
         // Bounding Box Mode

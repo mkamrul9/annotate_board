@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Activity, ShieldCheck, Mail, Github } from 'lucide-react';
+import { Activity, ShieldCheck, Mail, Code } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -51,7 +51,7 @@ export default function Footer() {
                 <Mail size={16} /> <span className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors">Contact Support</span>
               </li>
               <li className="flex items-center gap-2">
-                <Github size={16} /> <span className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors">Open Source</span>
+                <Code size={16} /> <span className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors">Open Source</span>
               </li>
             </ul>
           </div>

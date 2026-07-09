@@ -4,9 +4,11 @@ interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   compactMode: boolean;
+  autoSave: boolean;
   login: (token: string) => void;
   logout: () => void;
   toggleCompactMode: () => void;
+  toggleAutoSave: (value?: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -14,6 +16,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   token: typeof window !== 'undefined' ? localStorage.getItem('token') : null,
   isAuthenticated: typeof window !== 'undefined' ? !!localStorage.getItem('token') : false,
   compactMode: typeof window !== 'undefined' ? localStorage.getItem('compactMode') === 'true' : false,
+  autoSave: typeof window !== 'undefined' ? localStorage.getItem('autoSave') !== 'false' : true, // default true
   
   login: (token: string) => {
     localStorage.setItem('token', token);
@@ -32,6 +35,16 @@ export const useAuthStore = create<AuthState>((set) => ({
         localStorage.setItem('compactMode', newMode.toString());
       }
       return { compactMode: newMode };
+    });
+  },
+
+  toggleAutoSave: (value?: boolean) => {
+    set((state) => {
+      const newValue = value !== undefined ? value : !state.autoSave;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('autoSave', newValue.toString());
+      }
+      return { autoSave: newValue };
     });
   },
 }));

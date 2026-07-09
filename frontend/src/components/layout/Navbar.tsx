@@ -10,7 +10,8 @@ import { useTheme } from 'next-themes';
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { isAuthenticated, isProfileOpen, setIsProfileOpen } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { theme, setTheme } = useTheme();
 
   // Don't render the navbar on the login page
