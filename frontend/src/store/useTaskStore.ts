@@ -21,9 +21,11 @@ export interface Task {
 interface TaskState {
   tasks: Task[];
   selectedDate: string;
+  searchQuery: string;
   loading: boolean;
   syncStatus: 'idle' | 'syncing' | 'error';
   setSelectedDate: (date: string) => void;
+  setSearchQuery: (query: string) => void;
   fetchTasks: () => Promise<void>;
   moveTask: (taskId: number, newStatus: TaskStatus) => Promise<void>;
   addTask: (taskData: Partial<Task>) => Promise<void>;
@@ -34,6 +36,7 @@ interface TaskState {
 export const useTaskStore = create<TaskState>((set, get) => ({
   tasks: [],
   selectedDate: format(new Date(), 'yyyy-MM-dd'),
+  searchQuery: '',
   loading: false,
   syncStatus: 'idle',
 
@@ -41,6 +44,8 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     set({ selectedDate: date });
     get().fetchTasks(); // Auto-fetch when date changes
   },
+
+  setSearchQuery: (query: string) => set({ searchQuery: query }),
 
   fetchTasks: async () => {
     set({ loading: true });

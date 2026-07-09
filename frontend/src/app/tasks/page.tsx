@@ -86,12 +86,11 @@ function StatsBar({ tasks }: { tasks: Task[] }) {
 export default function TasksPage() {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
-  const { tasks, fetchTasks, moveTask, loading, syncStatus } = useTaskStore();
+  const { tasks, fetchTasks, moveTask, loading, syncStatus, searchQuery, setSearchQuery } = useTaskStore();
 
   const [mounted, setMounted] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
 
   // Auth guard
   useEffect(() => {
@@ -160,7 +159,18 @@ export default function TasksPage() {
             <p className="text-slate-500 text-sm mt-0.5">Manage your radiology workflow.</p>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="relative">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search tasks or tags..."
+                className="pl-9 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-white placeholder:text-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 outline-none w-64 transition"
+              />
+            </div>
+            
             <VoiceInput />
             <button
               id="new-task-btn"
@@ -175,18 +185,6 @@ export default function TasksPage() {
 
         {/* Stats */}
         {tasks.length > 0 && <StatsBar tasks={tasks} />}
-
-        {/* Search bar */}
-        <div className="relative mb-5">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-          <input
-            type="search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search tasks by title or tag…"
-            className="w-full sm:max-w-sm pl-9 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-white placeholder:text-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 outline-none"
-          />
-        </div>
 
         {/* Kanban Board */}
         <DragDropContext onDragEnd={onDragEnd}>

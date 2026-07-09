@@ -5,7 +5,7 @@ import { Stage, Layer, Image as KonvaImage, Line, Circle, Rect } from 'react-kon
 import Konva from 'konva';
 import useImage from 'use-image';
 import { AnnotationImage, useAnnotationStore } from '@/store/useAnnotationStore';
-import { ZoomIn, ZoomOut, RotateCcw, BoxSelect, Pentagon } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, BoxSelect, Pentagon, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useShortcuts } from '@/hooks/useShortcuts';
 import ShortcutModal from '@/components/layout/ShortcutModal';
@@ -32,6 +32,8 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
   // Radiologist filter controls
   const [brightness, setBrightness] = useState(0);
   const [invert, setInvert] = useState(false);
+  const [maskOpacity, setMaskOpacity] = useState(0.3);
+  const [showMasks, setShowMasks] = useState(true);
 
   // ── Reset canvas state when image changes ────────────────────────────────
   useEffect(() => {
@@ -364,6 +366,28 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
             <RotateCcw size={14} />
           </button>
         </div>
+
+        <div className="w-px h-4 bg-slate-700 mx-2" />
+
+        {/* Opacity Slider */}
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-slate-400 whitespace-nowrap">Masks</label>
+          <input 
+            type="range" min="0.1" max="0.9" step="0.1" 
+            value={maskOpacity} 
+            onChange={(e) => setMaskOpacity(parseFloat(e.target.value))}
+            className="w-16 accent-indigo-500"
+            disabled={!showMasks}
+          />
+        </div>
+
+        {/* Visibility Toggle */}
+        <button 
+          onClick={() => setShowMasks(!showMasks)}
+          className="flex items-center gap-1.5 text-xs font-medium text-slate-300 hover:text-white transition ml-1"
+        >
+          {showMasks ? <Eye size={16} /> : <EyeOff size={16} className="text-slate-500" />}
+        </button>
       </div>
 
       {/* ── Konva Stage ── */}
@@ -399,16 +423,17 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
             )}
           </Layer>
 
-          {/* Layer 2: Saved annotations */}
+          {/* Layer 2: Annotations overlay */}
           <Layer>
-            {imageObj.polygons.map((poly, i) => (
+            {/* Saved Annotations */}
+            {showMasks && imageObj.polygons.map((poly, i) => (
               <Line
-                key={poly.id ?? `poly-${i}`}
+                key={poly.id || i}
                 points={denormalizePoints(poly.points)}
-                fill="rgba(99, 102, 241, 0.25)"
                 stroke="#6366f1"
                 strokeWidth={2 / scale}
                 closed
+                fill={`rgba(99, 102, 241, ${maskOpacity})`}
                 onContextMenu={(e) => {
                   e.evt.preventDefault();
                   if (poly.id) {
