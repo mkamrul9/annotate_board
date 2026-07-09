@@ -3,7 +3,9 @@ import { Task } from '@/store/useTaskStore';
 import { Draggable } from '@hello-pangea/dnd';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Microscope } from 'lucide-react';
+import { Microscope, AlertCircle } from 'lucide-react';
+import { isBefore, parseISO, startOfToday } from 'date-fns';
+import { useAuthStore } from '@/store/useAuthStore';
 
 interface TaskCardProps {
   task: Task;
@@ -18,6 +20,13 @@ const PRIORITY_STYLES = {
 } as const;
 
 function TaskCard({ task, index, onEdit }: TaskCardProps) {
+  const { compactMode } = useAuthStore();
+  const isOverdue = task.status !== 'DONE' && isBefore(parseISO(task.due_date), startOfToday());
+  
+  const completedSubtasks = task.subtasks?.filter(s => s.done).length || 0;
+  const totalSubtasks = task.subtasks?.length || 0;
+  const progressPercentage = totalSubtasks === 0 ? 0 : (completedSubtasks / totalSubtasks) * 100;
+
   return (
     <Draggable draggableId={task.id.toString()} index={index}>
       {(provided, snapshot) => (
@@ -26,22 +35,29 @@ function TaskCard({ task, index, onEdit }: TaskCardProps) {
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           onClick={() => onEdit?.(task)}
-          className={`p-4 mb-2.5 rounded-xl border bg-slate-900 cursor-pointer select-none transition-all ${
-            snapshot.isDragging
-              ? 'border-indigo-500 shadow-2xl shadow-indigo-900/30 scale-[1.02] opacity-95 rotate-1'
-              : 'border-slate-800 hover:border-slate-700 shadow-sm hover:shadow-md'
+          className={`mb-2.5 rounded-xl border bg-slate-900 cursor-pointer select-none transition-all ${
+            compactMode ? 'p-2.5' : 'p-4'
+          } ${
+            isOverdue 
+              ? 'border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.2)]' 
+              : snapshot.isDragging
+                ? 'border-indigo-500 shadow-2xl shadow-indigo-900/30 scale-[1.02] opacity-95 rotate-1'
+                : 'border-slate-800 hover:border-slate-700 shadow-sm hover:shadow-md'
           }`}
         >
           {/* Title row */}
           <div className="flex justify-between items-start gap-2 mb-2.5">
-            <h4 className="font-semibold text-white text-sm leading-snug">{task.title}</h4>
+            <h4 className="font-semibold text-white text-sm leading-snug flex items-center gap-1.5">
+              {isOverdue && <AlertCircle size={14} className="text-red-500 animate-pulse" />}
+              {task.title}
+            </h4>
             <span className={`text-[10px] px-2 py-0.5 rounded-md border flex-shrink-0 font-medium ${PRIORITY_STYLES[task.priority]}`}>
               {task.priority}
             </span>
           </div>
 
           {/* Tags */}
-          {task.tags.length > 0 && (
+          {!compactMode && task.tags.length > 0 && (
             <div className="flex gap-1.5 flex-wrap mb-2.5">
               {task.tags.map((tag) => (
                 <span
@@ -54,10 +70,26 @@ function TaskCard({ task, index, onEdit }: TaskCardProps) {
             </div>
           )}
 
+          {/* Subtasks Progress */}
+          {totalSubtasks > 0 && (
+            <div className="mt-2.5">
+              <div className="flex justify-between text-[10px] text-slate-400 mb-1">
+                <span>Subtasks</span>
+                <span>{completedSubtasks}/{totalSubtasks}</span>
+              </div>
+              <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-indigo-500 transition-all duration-300" 
+                  style={{ width: `${progressPercentage}%` }} 
+                />
+              </div>
+            </div>
+          )}
+
           {/* Attached scan */}
           {task.image_url && (
             <div
-              className="mt-3 pt-3 border-t border-slate-800"
+              className={`pt-3 border-t border-slate-800 ${compactMode ? 'mt-2' : 'mt-3'}`}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between bg-slate-950/60 p-2 rounded-lg">

@@ -1,4 +1,7 @@
 from rest_framework import viewsets, permissions
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from annotations.models import AnnotationImage
 from .models import Task
 from .serializers import TaskSerializer
 
@@ -22,3 +25,17 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        """Return aggregate statistics for the current user."""
+        user_tasks = Task.objects.filter(user=request.user)
+        total_tasks = user_tasks.count()
+        completed_tasks = user_tasks.filter(status=Task.Status.DONE).count()
+        annotated_scans = AnnotationImage.objects.filter(user=request.user).count()
+
+        return Response({
+            "total_tasks": total_tasks,
+            "completed_tasks": completed_tasks,
+            "annotated_scans": annotated_scans,
+        })

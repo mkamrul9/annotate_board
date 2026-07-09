@@ -19,6 +19,7 @@ class Task(models.Model):
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.TODO)
     due_date = models.DateField()
     tags = models.JSONField(default=list, blank=True) # Stores tags like ["urgent", "frontend"]
+    subtasks = models.JSONField(default=list, blank=True) # Stores subtasks like [{"id": "...", "title": "Check lungs", "done": true}]
     
     # Link to the annotation image (nullable so not all tasks need an image)
     annotation_image = models.ForeignKey(

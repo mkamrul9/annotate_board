@@ -13,6 +13,7 @@ export interface Task {
   status: TaskStatus;
   due_date: string;
   tags: string[];
+  subtasks?: { id: string; title: string; done: boolean }[];
   annotation_image?: number | null;
   image_url?: string | null;
 }

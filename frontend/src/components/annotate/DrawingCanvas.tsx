@@ -5,7 +5,7 @@ import { Stage, Layer, Image as KonvaImage, Line, Circle } from 'react-konva';
 import Konva from 'konva';
 import useImage from 'use-image';
 import { AnnotationImage, useAnnotationStore } from '@/store/useAnnotationStore';
-import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, BoxSelect, Pentagon } from 'lucide-react';
 
 interface DrawingCanvasProps {
   imageObj: AnnotationImage;
@@ -16,7 +16,11 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const imageNodeRef = useRef<Konva.Image>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  
   const [currentPoints, setCurrentPoints] = useState<number[][]>([]);
+  const [boxPreview, setBoxPreview] = useState<number[][] | null>(null);
+  const [drawMode, setDrawMode] = useState<'polygon' | 'box'>('polygon');
+  
   const { savePolygon, deletePolygon } = useAnnotationStore();
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -28,6 +32,7 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
   // ── Reset canvas state when image changes ────────────────────────────────
   useEffect(() => {
     setCurrentPoints([]);
+    setBoxPreview(null);
     setScale(1);
     setPosition({ x: 0, y: 0 });
     setBrightness(0);
@@ -40,9 +45,11 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
       if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
         e.preventDefault();
         setCurrentPoints((prev) => prev.slice(0, -1));
+        setBoxPreview(null);
       }
       if (e.key === 'Escape') {
         setCurrentPoints([]);
+        setBoxPreview(null);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -50,8 +57,6 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
   }, []);
 
   // ── ResizeObserver: update canvas size to match container ────────────────
-  // Using ResizeObserver instead of window.resize gives correct size even
-  // when the container changes due to layout shifts, not just window resizes.
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -71,7 +76,6 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
   }, []);
 
   // ── Cache Konva image only when filter-relevant props change ─────────────
-  // Previously this ran on every dimensions change which was wasteful.
   useEffect(() => {
     if (img && imageNodeRef.current) {
       imageNodeRef.current.cache();
@@ -111,7 +115,25 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
     });
   }, []);
 
-  // ── Canvas click: add point to the current polygon ───────────────────────
+  // ── Calculate Fitted Dimensions (Preserve Aspect Ratio) ────────────────────
+  const getFittedDimensions = useCallback(() => {
+    if (!img || dimensions.width === 0) return { width: 0, height: 0, x: 0, y: 0 };
+    
+    const scaleFactor = Math.min(
+      dimensions.width / img.width,
+      dimensions.height / img.height
+    );
+
+    const fittedWidth = img.width * scaleFactor;
+    const fittedHeight = img.height * scaleFactor;
+
+    const x = (dimensions.width - fittedWidth) / 2;
+    const y = (dimensions.height - fittedHeight) / 2;
+
+    return { width: fittedWidth, height: fittedHeight, x, y };
+  }, [img, dimensions]);
+
+  // ── Canvas click: add point to polygon or draw box ───────────────────────
   const handleCanvasClick = useCallback(
     (e: { evt: MouseEvent; target: Konva.Node }) => {
       if (e.evt.button === 2) return; // Ignore right-click
@@ -125,27 +147,96 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
       const relativeX = (pointer.x - stage.x()) / scale;
       const relativeY = (pointer.y - stage.y()) / scale;
 
-      const normalizedX = relativeX / dimensions.width;
-      const normalizedY = relativeY / dimensions.height;
+      const fitted = getFittedDimensions();
+      const adjustedX = relativeX - fitted.x;
+      const adjustedY = relativeY - fitted.y;
 
-      setCurrentPoints((prev) => [...prev, [normalizedX, normalizedY]]);
+      // Ensure click is inside the actual image bounds
+      if (adjustedX < 0 || adjustedX > fitted.width || adjustedY < 0 || adjustedY > fitted.height) return;
+
+      const normalizedX = adjustedX / fitted.width;
+      const normalizedY = adjustedY / fitted.height;
+
+      if (drawMode === 'polygon') {
+        setCurrentPoints((prev) => [...prev, [normalizedX, normalizedY]]);
+      } else {
+        // Bounding Box Mode
+        if (currentPoints.length === 0) {
+          // First click: Start
+          setCurrentPoints([[normalizedX, normalizedY]]);
+        } else {
+          // Second click: End
+          const startPt = currentPoints[0];
+          const endPt = [normalizedX, normalizedY];
+          const boxPoints = [
+            [startPt[0], startPt[1]],
+            [endPt[0], startPt[1]],
+            [endPt[0], endPt[1]],
+            [startPt[0], endPt[1]]
+          ];
+          savePolygon(imageObj.id, boxPoints);
+          setCurrentPoints([]);
+          setBoxPreview(null);
+        }
+      }
     },
-    [scale, dimensions]
+    [scale, drawMode, currentPoints, getFittedDimensions, savePolygon, imageObj.id]
+  );
+
+  // ── Mouse Move for Box Preview ─────────────────────────────────────────────
+  const handleMouseMove = useCallback(
+    (e: { evt: MouseEvent; target: Konva.Node }) => {
+      if (drawMode !== 'box' || currentPoints.length !== 1) return;
+      
+      const stage = e.target.getStage();
+      if (!stage) return;
+      
+      const pointer = stage.getPointerPosition();
+      if (!pointer) return;
+
+      const relativeX = (pointer.x - stage.x()) / scale;
+      const relativeY = (pointer.y - stage.y()) / scale;
+
+      const fitted = getFittedDimensions();
+      const adjustedX = relativeX - fitted.x;
+      const adjustedY = relativeY - fitted.y;
+      
+      // Clamp so preview box doesn't spill outside image
+      const clampedX = Math.max(0, Math.min(adjustedX, fitted.width));
+      const clampedY = Math.max(0, Math.min(adjustedY, fitted.height));
+
+      const normalizedX = clampedX / fitted.width;
+      const normalizedY = clampedY / fitted.height;
+
+      const startPt = currentPoints[0];
+      setBoxPreview([
+        [startPt[0], startPt[1]],
+        [normalizedX, startPt[1]],
+        [normalizedX, normalizedY],
+        [startPt[0], normalizedY]
+      ]);
+    },
+    [scale, drawMode, currentPoints, getFittedDimensions]
   );
 
   // ── Save completed polygon ────────────────────────────────────────────────
   const handleCompletePolygon = useCallback(() => {
-    if (currentPoints.length > 2) {
+    if (drawMode === 'polygon' && currentPoints.length > 2) {
       savePolygon(imageObj.id, currentPoints);
     }
     setCurrentPoints([]);
-  }, [currentPoints, imageObj.id, savePolygon]);
+  }, [currentPoints, imageObj.id, savePolygon, drawMode]);
 
   // ── Denormalize [0,1] coords to canvas pixel coords ──────────────────────
   const denormalizePoints = useCallback(
-    (points: number[][]) =>
-      points.flatMap(([x, y]) => [x * dimensions.width, y * dimensions.height]),
-    [dimensions]
+    (points: number[][]) => {
+      const fitted = getFittedDimensions();
+      return points.flatMap(([x, y]) => [
+        (x * fitted.width) + fitted.x, 
+        (y * fitted.height) + fitted.y
+      ]);
+    },
+    [getFittedDimensions]
   );
 
   const resetZoom = () => {
@@ -157,12 +248,34 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
     ? [Konva.Filters.Brighten, Konva.Filters.Invert]
     : [Konva.Filters.Brighten];
 
+  const fitted = getFittedDimensions();
+
   return (
     <div className="w-full h-[580px] bg-slate-900 rounded-xl overflow-hidden border border-slate-700 relative" ref={containerRef}>
 
-      {/* ── Controls overlay (top-left): Save / Cancel drawing ── */}
-      {currentPoints.length > 0 && (
-        <div className="absolute top-4 left-4 z-10 flex gap-2">
+      {/* ── Draw Mode Toggle ── */}
+      <div className="absolute top-4 left-4 z-10 flex bg-slate-950/80 p-1 rounded-lg backdrop-blur-md border border-slate-700 shadow-xl">
+        <button
+          onClick={() => { setDrawMode('polygon'); setCurrentPoints([]); setBoxPreview(null); }}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition ${
+            drawMode === 'polygon' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <Pentagon size={14} /> Polygon
+        </button>
+        <button
+          onClick={() => { setDrawMode('box'); setCurrentPoints([]); setBoxPreview(null); }}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition ${
+            drawMode === 'box' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <BoxSelect size={14} /> Bounding Box
+        </button>
+      </div>
+
+      {/* ── Controls overlay: Save / Cancel drawing ── */}
+      {drawMode === 'polygon' && currentPoints.length > 0 && (
+        <div className="absolute top-16 left-4 z-10 flex gap-2">
           <button
             onClick={handleCompletePolygon}
             className="bg-green-600 hover:bg-green-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-lg transition"
@@ -246,6 +359,7 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
           width={dimensions.width}
           height={dimensions.height}
           onClick={handleCanvasClick}
+          onMouseMove={handleMouseMove}
           onWheel={handleWheel}
           draggable={scale > 1}
           scaleX={scale}
@@ -254,22 +368,25 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
           y={position.y}
           onDragEnd={(e) => setPosition({ x: e.target.x(), y: e.target.y() })}
           onContextMenu={(e) => e.evt.preventDefault()}
+          style={{ cursor: 'crosshair' }}
         >
-          {/* Layer 1: Image with filter support. listening=false skips hit-testing for performance. */}
+          {/* Layer 1: Image. Fixed Aspect Ratio. */}
           <Layer listening={false}>
             {img && (
               <KonvaImage
                 ref={imageNodeRef}
                 image={img}
-                width={dimensions.width}
-                height={dimensions.height}
+                width={fitted.width}
+                height={fitted.height}
+                x={fitted.x}
+                y={fitted.y}
                 brightness={brightness}
                 filters={filters}
               />
             )}
           </Layer>
 
-          {/* Layer 2: Saved polygon annotations */}
+          {/* Layer 2: Saved annotations */}
           <Layer>
             {imageObj.polygons.map((poly, i) => (
               <Line
@@ -289,9 +406,10 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
             ))}
           </Layer>
 
-          {/* Layer 3: Active drawing — isolated for minimal re-renders */}
+          {/* Layer 3: Active drawing */}
           <Layer listening={false}>
-            {currentPoints.length > 0 && (
+            {/* Polygon Mode Preview */}
+            {drawMode === 'polygon' && currentPoints.length > 0 && (
               <>
                 <Line
                   points={denormalizePoints(currentPoints)}
@@ -303,8 +421,8 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
                 {currentPoints.map((pt, i) => (
                   <Circle
                     key={i}
-                    x={pt[0] * dimensions.width}
-                    y={pt[1] * dimensions.height}
+                    x={(pt[0] * fitted.width) + fitted.x}
+                    y={(pt[1] * fitted.height) + fitted.y}
                     radius={4 / scale}
                     fill="#22c55e"
                     stroke="white"
@@ -313,11 +431,23 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
                 ))}
               </>
             )}
+
+            {/* Bounding Box Mode Preview */}
+            {drawMode === 'box' && boxPreview && (
+              <Line
+                points={denormalizePoints(boxPreview)}
+                stroke="#22c55e"
+                strokeWidth={2 / scale}
+                closed
+                dash={[6, 3]}
+                fill="rgba(34, 197, 94, 0.15)"
+              />
+            )}
           </Layer>
         </Stage>
       )}
 
-      {/* ── Keyboard hint (bottom-right) ── */}
+      {/* ── Keyboard hint ── */}
       <div className="absolute bottom-3 right-3 text-xs text-slate-600 pointer-events-none">
         <kbd>Ctrl+Z</kbd> undo · <kbd>Esc</kbd> cancel · scroll to zoom
       </div>

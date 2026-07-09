@@ -18,6 +18,8 @@ export default function TaskModal({ isOpen, onClose, existingTask }: TaskModalPr
   const [priority, setPriority] = useState<Task['priority']>('MEDIUM');
   const [tagsInput, setTagsInput] = useState('');
   const [selectedImage, setSelectedImage] = useState<number | ''>('');
+  const [subtasks, setSubtasks] = useState<{ id: string; title: string; done: boolean }[]>([]);
+  const [newSubtask, setNewSubtask] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   // Fetch images when modal opens so the dropdown is populated
@@ -32,11 +34,13 @@ export default function TaskModal({ isOpen, onClose, existingTask }: TaskModalPr
       setPriority(existingTask.priority);
       setTagsInput(existingTask.tags.join(', '));
       setSelectedImage(existingTask.annotation_image ?? '');
+      setSubtasks(existingTask.subtasks || []);
     } else {
       setTitle('');
       setPriority('MEDIUM');
       setTagsInput('');
       setSelectedImage('');
+      setSubtasks([]);
     }
   }, [existingTask, isOpen]);
 
@@ -47,9 +51,9 @@ export default function TaskModal({ isOpen, onClose, existingTask }: TaskModalPr
     const annotation_image = selectedImage === '' ? null : selectedImage;
 
     if (existingTask) {
-      await updateTask(existingTask.id, { title, priority, tags, annotation_image });
+      await updateTask(existingTask.id, { title, priority, tags, annotation_image, subtasks });
     } else {
-      await addTask({ title, priority, status: 'TODO', tags, annotation_image });
+      await addTask({ title, priority, status: 'TODO', tags, annotation_image, subtasks });
     }
     setSubmitting(false);
     onClose();
@@ -160,6 +164,76 @@ export default function TaskModal({ isOpen, onClose, existingTask }: TaskModalPr
                   placeholder="urgent, ct-scan, follow-up"
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white text-sm placeholder:text-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 outline-none"
                 />
+              </div>
+
+              {/* Subtasks */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                  Subtasks
+                </label>
+                <div className="space-y-2 mb-2">
+                  {subtasks.map((st, i) => (
+                    <div key={st.id} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={st.done}
+                        onChange={(e) => {
+                          const updated = [...subtasks];
+                          updated[i].done = e.target.checked;
+                          setSubtasks(updated);
+                        }}
+                        className="accent-indigo-500 w-4 h-4 rounded bg-slate-900 border-slate-700 cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={st.title}
+                        onChange={(e) => {
+                          const updated = [...subtasks];
+                          updated[i].title = e.target.value;
+                          setSubtasks(updated);
+                        }}
+                        className="flex-1 bg-transparent border-b border-transparent hover:border-slate-700 focus:border-indigo-500 text-sm text-slate-300 px-1 py-0.5 outline-none transition"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setSubtasks(subtasks.filter(s => s.id !== st.id))}
+                        className="text-slate-500 hover:text-red-400 p-1 transition"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={newSubtask}
+                    onChange={(e) => setNewSubtask(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (newSubtask.trim()) {
+                          setSubtasks([...subtasks, { id: Math.random().toString(36).substr(2, 9), title: newSubtask.trim(), done: false }]);
+                          setNewSubtask('');
+                        }
+                      }
+                    }}
+                    placeholder="Add a subtask..."
+                    className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-white text-sm placeholder:text-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (newSubtask.trim()) {
+                        setSubtasks([...subtasks, { id: Math.random().toString(36).substr(2, 9), title: newSubtask.trim(), done: false }]);
+                        setNewSubtask('');
+                      }
+                    }}
+                    className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm transition"
+                  >
+                    Add
+                  </button>
+                </div>
               </div>
 
               {/* Attach scan */}
