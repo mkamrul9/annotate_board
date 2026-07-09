@@ -38,9 +38,13 @@ export default function Navbar() {
 
           <button 
             onClick={() => setIsProfileOpen(true)} 
-            className="p-2 bg-slate-100 dark:bg-slate-900 rounded-full border border-slate-200 dark:border-slate-700 hover:border-indigo-500 transition"
+            className="group relative flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 p-[2px] transition-all hover:scale-105 hover:shadow-lg hover:shadow-indigo-500/25"
           >
-            <User size={16} className="text-slate-600 dark:text-slate-300" />
+            <div className="flex h-full w-full items-center justify-center rounded-full bg-white dark:bg-slate-950 transition-colors">
+              <User size={16} className="text-slate-600 dark:text-slate-300 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors" />
+            </div>
+            {/* Status dot */}
+            <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white dark:border-slate-950 rounded-full"></div>
           </button>
         </div>
       </nav>

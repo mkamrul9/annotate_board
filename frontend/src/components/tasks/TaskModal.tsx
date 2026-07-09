@@ -3,6 +3,7 @@ import { Task, useTaskStore } from '@/store/useTaskStore';
 import { useAnnotationStore } from '@/store/useAnnotationStore';
 import { X, Trash2, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 interface TaskModalProps {
   isOpen: boolean;
@@ -59,11 +60,22 @@ export default function TaskModal({ isOpen, onClose, existingTask }: TaskModalPr
     onClose();
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!existingTask) return;
-    if (!window.confirm(`Delete "${existingTask.title}"? This cannot be undone.`)) return;
-    await deleteTask(existingTask.id);
-    onClose();
+    toast.error(`Delete "${existingTask.title}"?`, {
+      description: "This cannot be undone.",
+      action: {
+        label: 'Delete',
+        onClick: async () => {
+          await deleteTask(existingTask.id);
+          onClose();
+        }
+      },
+      cancel: {
+        label: 'Cancel',
+        onClick: () => {}
+      }
+    });
   };
 
   return (
