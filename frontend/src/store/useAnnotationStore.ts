@@ -23,6 +23,7 @@ interface AnnotationState {
   setCurrentIndex: (index: number) => void;
   savePolygon: (imageId: number, points: number[][]) => Promise<void>;
   deletePolygon: (polygonId: number, imageId: number) => Promise<void>;
+  restorePolygon: (polygon: Polygon, imageId: number) => Promise<void>;
   autoAnnotate: (imageId: number) => Promise<void>;
 }
 
@@ -95,12 +96,26 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
     }));
     try {
       await api.delete(`annotations/polygons/${polygonId}/`);
-      toast.success('Annotation deleted');
     } catch (error) {
       console.error('Failed to delete polygon', error);
       toast.error('Failed to delete annotation');
       // Rollback
       set({ images: originalImages });
+    }
+  },
+
+  restorePolygon: async (polygon, imageId) => {
+    try {
+      // Re-save it using the points
+      const response = await api.post('annotations/polygons/', { image: imageId, points: polygon.points });
+      set((state) => ({
+        images: state.images.map((img) =>
+          img.id === imageId ? { ...img, polygons: [...img.polygons, response.data] } : img
+        ),
+      }));
+    } catch (error) {
+      console.error('Failed to restore polygon', error);
+      toast.error('Failed to restore annotation');
     }
   },
 

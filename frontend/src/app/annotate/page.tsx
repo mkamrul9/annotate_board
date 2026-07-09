@@ -17,6 +17,7 @@ import {
   Shapes,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 
 // ── Thumbnail strip ───────────────────────────────────────────────────────────
 
@@ -107,7 +108,10 @@ function AnnotateContent() {
   };
 
   const exportYOLOFormat = () => {
-    if (!activeImage || activeImage.polygons.length === 0) return;
+    if (!activeImage || activeImage.polygons.length === 0) {
+      toast.error('No annotations to export');
+      return;
+    }
 
     // YOLO segmentation format: <class-index> <x1> <y1> <x2> <y2> ...
     const yoloText = activeImage.polygons
@@ -126,6 +130,40 @@ function AnnotateContent() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    toast.success('YOLO format exported successfully!');
+  };
+
+  const exportCOCO = () => {
+    if (!activeImage || activeImage.polygons.length === 0) {
+      toast.error('No annotations to export');
+      return;
+    }
+
+    const cocoData = {
+      info: { description: "VAI Radiology Export", date_created: new Date().toISOString() },
+      images: [{ id: activeImage.id, file_name: `image_${activeImage.id}.jpg` }],
+      annotations: activeImage.polygons.map((poly, index) => {
+        // COCO requires a flat array of pixels [x1, y1, x2, y2...]
+        // We must denormalize using an assumed standard resolution (e.g., 1024x1024) or the original image dims
+        const flatPoints = poly.points.flatMap(([x, y]) => [Math.round(x * 1024), Math.round(y * 1024)]);
+        return {
+          id: poly.id || index,
+          image_id: activeImage.id,
+          category_id: 1, // Assuming class 1
+          segmentation: [flatPoints],
+          iscrowd: 0,
+        };
+      }),
+      categories: [{ id: 1, name: "anomaly", supercategory: "medical" }]
+    };
+
+    const blob = new Blob([JSON.stringify(cocoData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `coco_export_${activeImage.id}.json`;
+    a.click();
+    toast.success('COCO format exported successfully!');
   };
 
   const activeImage = images[currentIndex];
@@ -154,7 +192,15 @@ function AnnotateContent() {
                   className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-medium transition border border-slate-700"
                   title={activeImage.polygons.length === 0 ? 'No annotations to export' : 'Export YOLO format'}
                 >
-                  <Download size={16} /> Export YOLO
+                  <Download size={16} /> Export YOLO (.txt)
+                </button>
+                <button
+                  onClick={exportCOCO}
+                  disabled={activeImage.polygons.length === 0}
+                  className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-medium transition border border-slate-700"
+                  title={activeImage.polygons.length === 0 ? 'No annotations to export' : 'Export COCO format'}
+                >
+                  <Download size={16} /> Export COCO (.json)
                 </button>
                 <button
                   onClick={() => autoAnnotate(activeImage.id)}

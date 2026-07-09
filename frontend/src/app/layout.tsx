@@ -5,6 +5,8 @@ import { Toaster } from 'sonner';
 import CommandPalette from '@/components/layout/CommandPalette';
 import Navbar from '@/components/layout/Navbar';
 
+import Footer from '@/components/layout/Footer';
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -29,13 +31,14 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col bg-slate-950 text-slate-200">
         <Navbar />
         <main className="flex-1 flex flex-col">
           {children}
         </main>
+        <Footer />
         <Toaster
           theme="dark"
           position="bottom-right"

@@ -6,6 +6,9 @@ import Konva from 'konva';
 import useImage from 'use-image';
 import { AnnotationImage, useAnnotationStore } from '@/store/useAnnotationStore';
 import { ZoomIn, ZoomOut, RotateCcw, BoxSelect, Pentagon } from 'lucide-react';
+import { toast } from 'sonner';
+import { useShortcuts } from '@/hooks/useShortcuts';
+import ShortcutModal from '@/components/layout/ShortcutModal';
 
 interface DrawingCanvasProps {
   imageObj: AnnotationImage;
@@ -20,8 +23,9 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
   const [currentPoints, setCurrentPoints] = useState<number[][]>([]);
   const [boxPreview, setBoxPreview] = useState<number[][] | null>(null);
   const [drawMode, setDrawMode] = useState<'polygon' | 'box'>('polygon');
+  const [isShortcutModalOpen, setIsShortcutModalOpen] = useState(false);
   
-  const { savePolygon, deletePolygon } = useAnnotationStore();
+  const { savePolygon, deletePolygon, restorePolygon } = useAnnotationStore();
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
@@ -39,21 +43,30 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
     setInvert(false);
   }, [imageObj.id]);
 
-  // ── Keyboard shortcuts (Ctrl+Z = undo last point, Esc = cancel) ──────────
+  // ── Keyboard shortcuts ───────────────────────────────────────────────────
+  useShortcuts({
+    onUndo: () => {
+      setCurrentPoints((prev) => prev.slice(0, -1));
+      setBoxPreview(null);
+    },
+    onToggleMode: () => {
+      setDrawMode(prev => prev === 'polygon' ? 'box' : 'polygon');
+    },
+    onHelp: () => {
+      setIsShortcutModalOpen(true);
+    }
+  });
+
+  // Cancel drawing on Escape
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-        e.preventDefault();
-        setCurrentPoints((prev) => prev.slice(0, -1));
-        setBoxPreview(null);
-      }
+    const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setCurrentPoints([]);
         setBoxPreview(null);
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
   }, []);
 
   // ── ResizeObserver: update canvas size to match container ────────────────
@@ -398,8 +411,17 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
                 closed
                 onContextMenu={(e) => {
                   e.evt.preventDefault();
-                  if (poly.id && window.confirm('Delete this annotation?')) {
+                  if (poly.id) {
                     deletePolygon(poly.id, imageObj.id);
+                    toast.success('Annotation deleted', {
+                      action: {
+                        label: 'Undo',
+                        onClick: () => {
+                          restorePolygon(poly, imageObj.id);
+                          toast.info('Annotation restored');
+                        }
+                      }
+                    });
                   }
                 }}
               />
@@ -447,6 +469,10 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
             )}
           </Layer>
         </Stage>
+      )}
+
+      {isShortcutModalOpen && (
+        <ShortcutModal isOpen={isShortcutModalOpen} onClose={() => setIsShortcutModalOpen(false)} />
       )}
 
       {/* ── Keyboard hint ── */}
