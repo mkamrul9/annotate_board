@@ -1,4 +1,4 @@
-# ☢️ VAI Radiology Portal
+# ☢️ Annotate Board Portal
 
 A production-grade, full-stack radiology **task management** and **AI-powered image annotation** platform. Built with Django REST Framework (backend) and Next.js 16 (frontend), deployable to **Render** (backend) + **Vercel** (frontend) with zero cookie issues.
 
@@ -7,6 +7,7 @@ A production-grade, full-stack radiology **task management** and **AI-powered im
 ## ✨ Features
 
 ### 🗂️ Task Management (Kanban Board)
+
 - **Drag-and-drop** Kanban board with three columns (To Do / In Progress / Done)
 - **Date-filtered** tasks — navigate by day using the date selector
 - **Live search** — filter tasks by title or tag in real-time
@@ -19,6 +20,7 @@ A production-grade, full-stack radiology **task management** and **AI-powered im
 - **Link scans to tasks** — attach uploaded radiology images directly to a task card
 
 ### 🖼️ Image Annotation
+
 - **Upload** medical images (any format: DICOM screenshots, PNGs, JPGs)
 - **Polygon annotation** — click to place vertices, save multi-point shapes
 - **AI Auto-Annotate** — run YOLOv8 segmentation with one click; detected regions are saved automatically
@@ -30,6 +32,7 @@ A production-grade, full-stack radiology **task management** and **AI-powered im
 - **Keyboard shortcuts** — `Ctrl+Z` undo last point · `Esc` cancel drawing
 
 ### 🔐 Authentication
+
 - **Login & Register** — both in one page via tab switcher
 - **Token-based** — no cookies, no cross-origin issues between Vercel and Render
 - **Server-side logout** — invalidates the auth token on the server (not just local storage)
@@ -37,6 +40,7 @@ A production-grade, full-stack radiology **task management** and **AI-powered im
 - **Auth guards** — `/tasks` and `/annotate` redirect to login if unauthenticated
 
 ### ⌨️ Command Palette (`Ctrl+K`)
+
 - Navigate to Tasks or Annotate instantly
 - Create a new task without touching the mouse
 - Log out from anywhere in the app
@@ -134,6 +138,7 @@ npm run dev
 ## 🌐 Deploying to Production
 
 ### Backend → Render
+
 1. Push repo to GitHub
 2. In Render Dashboard → **New** → **Blueprint** → select this repo
 3. Render reads `render.yaml` and auto-creates the **web service** + **PostgreSQL** database
@@ -141,6 +146,7 @@ npm run dev
 5. First deploy: open Render Shell → `python manage.py createsuperuser`
 
 ### Frontend → Vercel
+
 1. In Vercel Dashboard → **New Project** → import the `frontend/` directory
 2. Add environment variable: `NEXT_PUBLIC_API_URL=https://your-backend.onrender.com/api/`
 3. Deploy — zero additional config needed

@@ -12,6 +12,7 @@ from rest_framework.throttling import AnonRateThrottle
 from django.contrib.auth.models import User
 
 
+# Anonymous users can only attempt login or registration 10 times per minute
 class LoginRateThrottle(AnonRateThrottle):
     rate = '10/minute'
 

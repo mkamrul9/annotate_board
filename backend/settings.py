@@ -14,7 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Security
 # ---------------------------------------------------------------------------
 
-# SECURITY WARNING: In production, set SECRET_KEY in the environment.
+# In production, set SECRET_KEY in the environment.
 SECRET_KEY = os.environ.get(
     'SECRET_KEY',
     'django-insecure-local-dev-key-change-me-in-production'
@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'tasks',
     'annotations',
-]
+] 
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
