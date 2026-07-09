@@ -266,14 +266,14 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
   const fitted = getFittedDimensions();
 
   return (
-    <div className="w-full h-[580px] bg-slate-900 rounded-xl overflow-hidden border border-slate-700 relative" ref={containerRef}>
+    <div className="w-full h-[580px] bg-slate-100 dark:bg-slate-900 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 relative transition-colors" ref={containerRef}>
 
       {/* ── Draw Mode Toggle ── */}
-      <div className="absolute top-4 left-4 z-10 flex bg-slate-950/80 p-1 rounded-lg backdrop-blur-md border border-slate-700 shadow-xl">
+      <div className="absolute top-4 left-4 z-10 flex bg-white/80 dark:bg-slate-950/80 p-1 rounded-lg backdrop-blur-md border border-slate-200 dark:border-slate-700 shadow-xl">
         <button
           onClick={() => { setDrawMode('polygon'); setCurrentPoints([]); setBoxPreview(null); }}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition ${
-            drawMode === 'polygon' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+            drawMode === 'polygon' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
           }`}
         >
           <Pentagon size={14} /> Polygon
@@ -281,7 +281,7 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
         <button
           onClick={() => { setDrawMode('box'); setCurrentPoints([]); setBoxPreview(null); }}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition ${
-            drawMode === 'box' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+            drawMode === 'box' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
           }`}
         >
           <BoxSelect size={14} /> Bounding Box
@@ -307,7 +307,7 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
       )}
 
       {/* ── Radiologist Toolkit Toolbar (top-center) ── */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-4 bg-slate-950/90 border border-slate-700 shadow-2xl rounded-xl px-4 py-2.5 backdrop-blur-sm">
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-4 bg-white/90 dark:bg-slate-950/90 border border-slate-200 dark:border-slate-700 shadow-2xl rounded-xl px-4 py-2.5 backdrop-blur-sm">
         <div className="flex items-center gap-2">
           <label className="text-xs text-slate-400 whitespace-nowrap">Brightness</label>
           <input
@@ -342,7 +342,7 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
         <div className="flex items-center gap-1">
           <button
             onClick={() => setScale((s) => Math.min(s * 1.2, 8))}
-            className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition"
+            className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-400 hover:text-slate-600 dark:hover:text-white transition"
             title="Zoom in"
           >
             <ZoomIn size={14} />
@@ -352,7 +352,7 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
           </span>
           <button
             onClick={() => setScale((s) => Math.max(s / 1.2, 1))}
-            className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition"
+            className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-400 hover:text-slate-600 dark:hover:text-white transition"
             title="Zoom out"
           >
             <ZoomOut size={14} />
@@ -360,14 +360,14 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
           <button
             onClick={resetZoom}
             disabled={scale === 1}
-            className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white disabled:opacity-30 transition"
+            className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-400 hover:text-slate-600 dark:hover:text-white disabled:opacity-30 transition"
             title="Reset zoom"
           >
             <RotateCcw size={14} />
           </button>
         </div>
 
-        <div className="w-px h-4 bg-slate-700 mx-2" />
+        <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-2" />
 
         {/* Opacity Slider */}
         <div className="flex items-center gap-2">
@@ -384,9 +384,9 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
         {/* Visibility Toggle */}
         <button 
           onClick={() => setShowMasks(!showMasks)}
-          className="flex items-center gap-1.5 text-xs font-medium text-slate-300 hover:text-white transition ml-1"
+          className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition ml-1"
         >
-          {showMasks ? <Eye size={16} /> : <EyeOff size={16} className="text-slate-500" />}
+          {showMasks ? <Eye size={16} /> : <EyeOff size={16} className="text-slate-400 dark:text-slate-500" />}
         </button>
       </div>
 

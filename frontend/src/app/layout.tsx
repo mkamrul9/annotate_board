@@ -7,6 +7,8 @@ import Navbar from '@/components/layout/Navbar';
 
 import Footer from '@/components/layout/Footer';
 
+import { ThemeProvider } from "@/components/layout/ThemeProvider";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -31,26 +33,28 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-slate-950 text-slate-200">
-        <Navbar />
-        <main className="flex-1 flex flex-col">
-          {children}
-        </main>
-        <Footer />
-        <Toaster
-          theme="dark"
-          position="bottom-right"
-          toastOptions={{
-            style: {
-              background: '#111827',
-              border: '1px solid #1f2937',
-              color: '#f1f5f9',
-            },
-          }}
-        />
-        <CommandPalette />
+      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-200 transition-colors duration-300">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Navbar />
+          <main className="flex-1 flex flex-col">
+            {children}
+          </main>
+          <Footer />
+          <Toaster
+            position="bottom-right"
+            richColors
+            closeButton
+          />
+          <CommandPalette />
+        </ThemeProvider>
       </body>
     </html>
   );

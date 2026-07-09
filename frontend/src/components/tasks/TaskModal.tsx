@@ -85,22 +85,21 @@ export default function TaskModal({ isOpen, onClose, existingTask }: TaskModalPr
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 16 }}
             transition={{ type: 'spring', bounce: 0.3, duration: 0.45 }}
-            className="relative bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden"
+            className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden"
           >
             {/* Header */}
-            <div className="flex justify-between items-center px-6 py-5 border-b border-slate-800">
+            <div className="flex justify-between items-center px-6 py-5 border-b border-slate-100 dark:border-slate-800">
               <div>
-                <h2 className="text-lg font-bold text-white">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                   {existingTask ? 'Edit Task' : 'New Task'}
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   {existingTask ? 'Update task details below' : 'Add a new task to your board'}
                 </p>
               </div>
               <button
                 onClick={onClose}
-                className="text-slate-500 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition"
-                aria-label="Close modal"
+                className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition"
               >
                 <X size={18} />
               </button>
@@ -110,23 +109,21 @@ export default function TaskModal({ isOpen, onClose, existingTask }: TaskModalPr
             <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
               {/* Title */}
               <div>
-                <label htmlFor="task-title" className="block text-sm font-medium text-slate-300 mb-1.5">
-                  Title <span className="text-red-400">*</span>
-                </label>
-                <input
-                  id="task-title"
-                  required
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Review CT scan for patient #4821"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white text-sm placeholder:text-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 outline-none"
-                />
-              </div>
+                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
+                    Title
+                  </label>
+                  <input
+                    required
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="e.g., Review head CT scan..."
+                    className="w-full bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 outline-none transition"
+                  />
+                </div>
 
               {/* Priority */}
               <div>
-                <label htmlFor="task-priority" className="block text-sm font-medium text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
                   Priority
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -138,11 +135,11 @@ export default function TaskModal({ isOpen, onClose, existingTask }: TaskModalPr
                       className={`py-2 rounded-xl text-xs font-semibold border transition-all ${
                         priority === p
                           ? p === 'LOW'
-                            ? 'bg-green-500/20 border-green-500/50 text-green-400'
+                            ? 'bg-emerald-100 dark:bg-green-500/20 border-emerald-500/30 dark:border-green-500/50 text-emerald-700 dark:text-green-400'
                             : p === 'MEDIUM'
-                            ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400'
-                            : 'bg-red-500/20 border-red-500/50 text-red-400'
-                          : 'bg-slate-800/60 border-slate-700 text-slate-500 hover:border-slate-600'
+                            ? 'bg-amber-100 dark:bg-yellow-500/20 border-amber-500/30 dark:border-yellow-500/50 text-amber-700 dark:text-yellow-400'
+                            : 'bg-red-100 dark:bg-red-500/20 border-red-500/30 dark:border-red-500/50 text-red-700 dark:text-red-400'
+                          : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-slate-300 dark:hover:border-slate-600'
                       }`}
                     >
                       {p}
@@ -153,8 +150,8 @@ export default function TaskModal({ isOpen, onClose, existingTask }: TaskModalPr
 
               {/* Tags */}
               <div>
-                <label htmlFor="task-tags" className="block text-sm font-medium text-slate-300 mb-1.5">
-                  Tags <span className="text-slate-500 font-normal">(comma separated)</span>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
+                  Tags <span className="text-slate-400 dark:text-slate-500 font-normal normal-case tracking-normal">(comma separated)</span>
                 </label>
                 <input
                   id="task-tags"
@@ -162,13 +159,13 @@ export default function TaskModal({ isOpen, onClose, existingTask }: TaskModalPr
                   value={tagsInput}
                   onChange={(e) => setTagsInput(e.target.value)}
                   placeholder="urgent, ct-scan, follow-up"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white text-sm placeholder:text-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 outline-none"
+                  className="w-full bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 outline-none transition"
                 />
               </div>
 
               {/* Subtasks */}
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
                   Subtasks
                 </label>
                 <div className="space-y-2 mb-2">
@@ -182,7 +179,7 @@ export default function TaskModal({ isOpen, onClose, existingTask }: TaskModalPr
                           updated[i].done = e.target.checked;
                           setSubtasks(updated);
                         }}
-                        className="accent-indigo-500 w-4 h-4 rounded bg-slate-900 border-slate-700 cursor-pointer"
+                        className="accent-indigo-500 w-4 h-4 rounded bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-700 cursor-pointer"
                       />
                       <input
                         type="text"
@@ -192,12 +189,12 @@ export default function TaskModal({ isOpen, onClose, existingTask }: TaskModalPr
                           updated[i].title = e.target.value;
                           setSubtasks(updated);
                         }}
-                        className="flex-1 bg-transparent border-b border-transparent hover:border-slate-700 focus:border-indigo-500 text-sm text-slate-300 px-1 py-0.5 outline-none transition"
+                        className="flex-1 bg-transparent border-b border-transparent hover:border-slate-300 dark:hover:border-slate-700 focus:border-indigo-500 text-sm text-slate-700 dark:text-slate-300 px-1 py-0.5 outline-none transition"
                       />
                       <button
                         type="button"
                         onClick={() => setSubtasks(subtasks.filter(s => s.id !== st.id))}
-                        className="text-slate-500 hover:text-red-400 p-1 transition"
+                        className="text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400 p-1 transition"
                       >
                         <Trash2 size={14} />
                       </button>
@@ -219,7 +216,7 @@ export default function TaskModal({ isOpen, onClose, existingTask }: TaskModalPr
                       }
                     }}
                     placeholder="Add a subtask..."
-                    className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-white text-sm placeholder:text-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 outline-none"
+                    className="flex-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-lg px-3.5 py-2 text-slate-900 dark:text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 outline-none transition"
                   />
                   <button
                     type="button"
@@ -229,7 +226,7 @@ export default function TaskModal({ isOpen, onClose, existingTask }: TaskModalPr
                         setNewSubtask('');
                       }
                     }}
-                    className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm transition"
+                    className="px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-sm transition font-medium"
                   >
                     Add
                   </button>
@@ -238,14 +235,14 @@ export default function TaskModal({ isOpen, onClose, existingTask }: TaskModalPr
 
               {/* Attach scan */}
               <div>
-                <label htmlFor="task-image" className="block text-sm font-medium text-slate-300 mb-1.5">
-                  Attach Scan <span className="text-slate-500 font-normal">(optional)</span>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
+                  Attach Scan <span className="text-slate-400 dark:text-slate-500 font-normal normal-case tracking-normal">(optional)</span>
                 </label>
                 <select
                   id="task-image"
                   value={selectedImage}
                   onChange={(e) => setSelectedImage(Number(e.target.value) || '')}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 outline-none"
+                  className="w-full bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 outline-none transition"
                 >
                   <option value="">— No image attached —</option>
                   {images.map((img) => (
@@ -257,12 +254,12 @@ export default function TaskModal({ isOpen, onClose, existingTask }: TaskModalPr
               </div>
 
               {/* Footer actions */}
-              <div className="flex justify-between items-center pt-2 mt-2 border-t border-slate-800">
+              <div className="flex justify-between items-center pt-2 mt-2 border-t border-slate-100 dark:border-slate-800">
                 {existingTask ? (
                   <button
                     type="button"
                     onClick={handleDelete}
-                    className="flex items-center gap-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 px-3 py-1.5 rounded-lg text-sm transition"
+                    className="flex items-center gap-1.5 text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 px-3 py-1.5 rounded-lg text-sm transition"
                   >
                     <Trash2 size={14} /> Delete
                   </button>

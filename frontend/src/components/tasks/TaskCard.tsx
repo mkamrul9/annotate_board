@@ -35,19 +35,19 @@ function TaskCard({ task, index, onEdit }: TaskCardProps) {
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           onClick={() => onEdit?.(task)}
-          className={`mb-2.5 rounded-xl border bg-slate-900 cursor-pointer select-none transition-all ${
+          className={`mb-2.5 rounded-xl border bg-white dark:bg-slate-900 cursor-pointer select-none transition-all ${
             compactMode ? 'p-2.5' : 'p-4'
           } ${
             snapshot.isDragging
               ? 'border-indigo-500 shadow-2xl scale-[1.02] opacity-95 rotate-1'
               : isOverdue 
-                ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.15)]'
-                : 'border-slate-800 hover:border-slate-700 shadow-sm hover:shadow-md'
+                ? 'border-red-400 dark:border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.15)]'
+                : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 shadow-sm hover:shadow-md'
           }`}
         >
           {/* Title row */}
           <div className="flex justify-between items-start gap-2 mb-2.5">
-            <h4 className="font-semibold text-white text-sm leading-snug flex flex-col items-start gap-1">
+            <h4 className="font-semibold text-slate-900 dark:text-white text-sm leading-snug flex flex-col items-start gap-1">
               <div className="flex items-center gap-1.5">
                 {task.title}
               </div>
@@ -64,7 +64,7 @@ function TaskCard({ task, index, onEdit }: TaskCardProps) {
               {task.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="text-[10px] text-slate-500 bg-slate-800/80 px-2 py-0.5 rounded-full"
+                  className="text-[10px] text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-full"
                 >
                   #{tag}
                 </span>
@@ -75,11 +75,11 @@ function TaskCard({ task, index, onEdit }: TaskCardProps) {
           {/* Subtasks Progress */}
           {totalSubtasks > 0 && (
             <div className="mt-4">
-              <div className="flex justify-between text-xs text-slate-400 mb-1">
+              <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
                 <span>Checklist</span>
                 <span>{completedSubtasks}/{totalSubtasks}</span>
               </div>
-              <div className="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden">
+              <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-950 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-indigo-500 transition-all duration-500" 
                   style={{ width: `${progressPercentage}%` }} 
@@ -91,10 +91,10 @@ function TaskCard({ task, index, onEdit }: TaskCardProps) {
           {/* Attached scan */}
           {task.image_url && (
             <div
-              className={`pt-3 border-t border-slate-800 ${compactMode ? 'mt-2' : 'mt-3'}`}
+              className={`pt-3 border-t border-slate-100 dark:border-slate-800 ${compactMode ? 'mt-2' : 'mt-3'}`}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between bg-slate-950/60 p-2 rounded-lg">
+              <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-950/60 p-2 rounded-lg">
                 <div className="flex items-center gap-2 overflow-hidden">
                   <div className="relative w-8 h-8 rounded overflow-hidden flex-shrink-0">
                     <Image
