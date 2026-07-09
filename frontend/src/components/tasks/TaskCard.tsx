@@ -38,18 +38,20 @@ function TaskCard({ task, index, onEdit }: TaskCardProps) {
           className={`mb-2.5 rounded-xl border bg-slate-900 cursor-pointer select-none transition-all ${
             compactMode ? 'p-2.5' : 'p-4'
           } ${
-            isOverdue 
-              ? 'border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.2)]' 
-              : snapshot.isDragging
-                ? 'border-indigo-500 shadow-2xl shadow-indigo-900/30 scale-[1.02] opacity-95 rotate-1'
+            snapshot.isDragging
+              ? 'border-indigo-500 shadow-2xl scale-[1.02] opacity-95 rotate-1'
+              : isOverdue 
+                ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.15)]'
                 : 'border-slate-800 hover:border-slate-700 shadow-sm hover:shadow-md'
           }`}
         >
           {/* Title row */}
           <div className="flex justify-between items-start gap-2 mb-2.5">
-            <h4 className="font-semibold text-white text-sm leading-snug flex items-center gap-1.5">
-              {isOverdue && <AlertCircle size={14} className="text-red-500 animate-pulse" />}
-              {task.title}
+            <h4 className="font-semibold text-white text-sm leading-snug flex flex-col items-start gap-1">
+              <div className="flex items-center gap-1.5">
+                {task.title}
+              </div>
+              {isOverdue && <span className="text-[10px] uppercase font-bold text-red-500 bg-red-500/10 px-2 py-0.5 rounded animate-pulse">Overdue</span>}
             </h4>
             <span className={`text-[10px] px-2 py-0.5 rounded-md border flex-shrink-0 font-medium ${PRIORITY_STYLES[task.priority]}`}>
               {task.priority}
@@ -72,14 +74,14 @@ function TaskCard({ task, index, onEdit }: TaskCardProps) {
 
           {/* Subtasks Progress */}
           {totalSubtasks > 0 && (
-            <div className="mt-2.5">
-              <div className="flex justify-between text-[10px] text-slate-400 mb-1">
-                <span>Subtasks</span>
+            <div className="mt-4">
+              <div className="flex justify-between text-xs text-slate-400 mb-1">
+                <span>Checklist</span>
                 <span>{completedSubtasks}/{totalSubtasks}</span>
               </div>
-              <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+              <div className="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-indigo-500 transition-all duration-300" 
+                  className="h-full bg-indigo-500 transition-all duration-500" 
                   style={{ width: `${progressPercentage}%` }} 
                 />
               </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Stage, Layer, Image as KonvaImage, Line, Circle } from 'react-konva';
+import { Stage, Layer, Image as KonvaImage, Line, Circle, Rect } from 'react-konva';
 import Konva from 'konva';
 import useImage from 'use-image';
 import { AnnotationImage, useAnnotationStore } from '@/store/useAnnotationStore';
@@ -433,12 +433,14 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
             )}
 
             {/* Bounding Box Mode Preview */}
-            {drawMode === 'box' && boxPreview && (
-              <Line
-                points={denormalizePoints(boxPreview)}
+            {drawMode === 'box' && boxPreview && boxPreview.length === 4 && (
+              <Rect
+                x={(boxPreview[0][0] * fitted.width) + fitted.x}
+                y={(boxPreview[0][1] * fitted.height) + fitted.y}
+                width={(boxPreview[2][0] - boxPreview[0][0]) * fitted.width}
+                height={(boxPreview[2][1] - boxPreview[0][1]) * fitted.height}
                 stroke="#22c55e"
                 strokeWidth={2 / scale}
-                closed
                 dash={[6, 3]}
                 fill="rgba(34, 197, 94, 0.15)"
               />
