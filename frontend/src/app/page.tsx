@@ -61,7 +61,7 @@ export default function LoginPage() {
 
   const fillDemo = () => {
     setMode('login');
-    setUsername('demo');
+    setUsername('demo@example.com');
     setPassword('Demo@1234');
     toast.info('Demo credentials filled — click Sign In!', { duration: 3000 });
   };
@@ -118,16 +118,16 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="px-8 pb-8 space-y-4">
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-slate-300 mb-1.5">
-              Username
+              Email Address
             </label>
             <input
               id="username"
-              type="text"
+              type="email"
               required
-              autoComplete="username"
+              autoComplete="email"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="e.g. dr.smith"
+              placeholder="name@example.com"
               className="w-full px-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl text-white placeholder:text-slate-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
             />
           </div>

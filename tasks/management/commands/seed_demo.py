@@ -12,7 +12,7 @@ import json
 from datetime import date, timedelta
 
 
-DEMO_USERNAME = 'demo'
+DEMO_USERNAME = 'demo@example.com'
 DEMO_PASSWORD = 'Demo@1234'
 
 SEED_TASKS = [

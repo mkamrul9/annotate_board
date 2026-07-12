@@ -4,6 +4,19 @@ A production-grade, full-stack radiology **task management** and **AI-powered im
 
 ---
 
+## 🌍 Live Demo & Links
+
+- **Frontend App (Vercel):** [https://annotate-board.vercel.app/](https://annotate-board.vercel.app/)
+- **Backend API (Render):** [https://vai-radiology-backend.onrender.com/api/](https://vai-radiology-backend.onrender.com/api/)
+- **GitHub Repository:** [https://github.com/mkamrul9/annotate_board](https://github.com/mkamrul9/annotate_board)
+
+### Demo Credentials
+Log into the live app with the following pre-seeded test account:
+- **Email:** `demo@example.com`
+- **Password:** `Demo@1234`
+
+---
+
 ## ✨ Features
 
 ### 🗂️ Task Management (Kanban Board)
