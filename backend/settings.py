@@ -157,6 +157,9 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOWED_ORIGINS = list(set(CORS_ALLOWED_ORIGINS))
 
 CORS_ALLOW_CREDENTIALS = True
+# Allow media images to be loaded cross-origin (needed for Konva canvas CORS)
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
 
 
 # ---------------------------------------------------------------------------

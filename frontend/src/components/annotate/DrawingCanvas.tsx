@@ -58,20 +58,12 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
     },
     onHelp: () => {
       setIsShortcutModalOpen(true);
-    }
+    },
+    onCancelDraw: () => {
+      setCurrentPoints([]);
+      setBoxPreview(null);
+    },
   });
-
-  // Cancel drawing on Escape
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setCurrentPoints([]);
-        setBoxPreview(null);
-      }
-    };
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
-  }, []);
 
   // ── ResizeObserver: update canvas size to match container ────────────────
   useEffect(() => {
@@ -336,7 +328,7 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
           </span>
         </div>
 
-        <div className="w-px h-4 bg-slate-700" />
+        <div className="w-px h-4 bg-slate-200 dark:bg-slate-700" />
 
         <label className="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
           <input

@@ -35,7 +35,7 @@ function ThumbnailStrip() {
           className={`relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
             i === currentIndex
               ? 'border-indigo-500 shadow-lg shadow-indigo-900/40'
-              : 'border-slate-700 hover:border-slate-500 opacity-60 hover:opacity-100'
+              : 'border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500 opacity-60 hover:opacity-100'
           }`}
           title={`Image #${img.id} — ${img.polygons.length} annotation(s)`}
         >
@@ -171,14 +171,14 @@ function AnnotateContent() {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="min-h-full bg-slate-950 p-6 md:p-8 text-slate-200">
+    <div className="min-h-full bg-slate-50 dark:bg-slate-950 p-6 md:p-8 text-slate-800 dark:text-slate-200">
       <div className="max-w-6xl mx-auto space-y-5">
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">Image Annotation</h1>
-            <p className="text-slate-500 text-sm mt-0.5">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Image Annotation</h1>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
               Click on canvas to draw polygon shapes · Right-click to delete
             </p>
           </div>
@@ -189,7 +189,7 @@ function AnnotateContent() {
                 <button
                   onClick={exportYOLOFormat}
                   disabled={activeImage.polygons.length === 0}
-                  className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-medium transition border border-slate-700"
+                  className="flex items-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 dark:text-white px-4 py-2 rounded-lg text-sm font-medium transition border border-slate-200 dark:border-slate-700"
                   title={activeImage.polygons.length === 0 ? 'No annotations to export' : 'Export YOLO format'}
                 >
                   <Download size={16} /> Export YOLO (.txt)
@@ -197,7 +197,7 @@ function AnnotateContent() {
                 <button
                   onClick={exportCOCO}
                   disabled={activeImage.polygons.length === 0}
-                  className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-medium transition border border-slate-700"
+                  className="flex items-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 dark:text-white px-4 py-2 rounded-lg text-sm font-medium transition border border-slate-200 dark:border-slate-700"
                   title={activeImage.polygons.length === 0 ? 'No annotations to export' : 'Export COCO format'}
                 >
                   <Download size={16} /> Export COCO (.json)
@@ -241,21 +241,21 @@ function AnnotateContent() {
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-3"
+            className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-3 space-y-3"
           >
             {/* Navigation row */}
             <div className="flex items-center justify-between">
               <button
                 onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
                 disabled={currentIndex === 0}
-                className="p-1.5 bg-slate-800 rounded-lg hover:bg-slate-700 disabled:opacity-30 transition"
+                className="p-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-white disabled:opacity-30 transition"
                 aria-label="Previous image"
               >
                 <ChevronLeft size={18} />
               </button>
 
               <div className="flex items-center gap-3 text-sm">
-                <span className="text-slate-400 font-medium">
+                <span className="text-slate-600 dark:text-slate-400 font-medium">
                   Image {currentIndex + 1} of {images.length}
                 </span>
                 {activeImage && (
@@ -269,7 +269,7 @@ function AnnotateContent() {
               <button
                 onClick={() => setCurrentIndex(Math.min(images.length - 1, currentIndex + 1))}
                 disabled={currentIndex === images.length - 1}
-                className="p-1.5 bg-slate-800 rounded-lg hover:bg-slate-700 disabled:opacity-30 transition"
+                className="p-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-white disabled:opacity-30 transition"
                 aria-label="Next image"
               >
                 <ChevronRight size={18} />
@@ -283,7 +283,7 @@ function AnnotateContent() {
 
         {/* Canvas workspace */}
         {loading && !activeImage ? (
-          <div className="h-[580px] flex items-center justify-center border border-slate-800 rounded-xl bg-slate-900/50">
+          <div className="h-[580px] flex items-center justify-center border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-100/50 dark:bg-slate-900/50">
             <div className="flex flex-col items-center gap-3 text-slate-400">
               <Loader2 size={32} className="animate-spin" />
               <span className="text-sm">Loading workspace…</span>
@@ -295,14 +295,14 @@ function AnnotateContent() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="h-[580px] flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-xl text-slate-500 gap-4"
+            className="h-[580px] flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl text-slate-400 gap-4"
           >
-            <div className="w-16 h-16 rounded-2xl bg-slate-800/60 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800/60 flex items-center justify-center">
               <ImageIcon size={28} className="opacity-50" />
             </div>
             <div className="text-center">
-              <p className="font-medium text-slate-400">No images yet</p>
-              <p className="text-sm mt-1">Upload a medical image to begin annotating</p>
+              <p className="font-medium text-slate-600 dark:text-slate-400">No images yet</p>
+              <p className="text-sm mt-1 text-slate-400 dark:text-slate-500">Upload an image to begin annotating</p>
             </div>
             <button
               onClick={() => fileInputRef.current?.click()}
@@ -323,7 +323,7 @@ export default function AnnotatePage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-full bg-slate-950 flex items-center justify-center text-slate-400">
+        <div className="min-h-full bg-slate-50 dark:bg-slate-950 flex items-center justify-center text-slate-400">
           <Loader2 size={24} className="animate-spin mr-3" />
           Loading…
         </div>

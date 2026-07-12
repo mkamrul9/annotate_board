@@ -36,7 +36,6 @@ export default function Footer() {
             <ul className="space-y-2.5 text-sm text-slate-500 dark:text-slate-400">
               <li><Link href="/tasks" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Kanban Board</Link></li>
               <li><Link href="/annotate" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Annotation Studio</Link></li>
-              <li><Link href="/" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Patient Hub</Link></li>
             </ul>
           </div>
 
@@ -45,13 +44,16 @@ export default function Footer() {
             <h4 className="font-semibold text-slate-900 dark:text-white mb-4 text-sm">Legal & Connect</h4>
             <ul className="space-y-2.5 text-sm text-slate-500 dark:text-slate-400">
               <li className="flex items-center gap-2">
-                <ShieldCheck size={16} /> <span className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors">Privacy Policy</span>
+                <ShieldCheck size={16} />
+                <Link href="/privacy" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Privacy Policy</Link>
               </li>
               <li className="flex items-center gap-2">
-                <Mail size={16} /> <span className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors">Contact Support</span>
+                <Mail size={16} />
+                <Link href="/contact" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Contact Support</Link>
               </li>
               <li className="flex items-center gap-2">
-                <Code size={16} /> <span className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors">Open Source</span>
+                <Code size={16} />
+                <Link href="/opensource" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Open Source</Link>
               </li>
             </ul>
           </div>
@@ -59,12 +61,12 @@ export default function Footer() {
 
         <div className="flex flex-col sm:flex-row justify-between items-center mt-12 pt-6 border-t border-slate-200 dark:border-slate-800/60 relative z-10">
           <p className="text-xs text-slate-500">
-            © {new Date().getFullYear()} VAI Radiology Phase 2 Assessment. All rights reserved.
+            © {new Date().getFullYear()} Annotate Board. All rights reserved.
           </p>
           <div className="flex items-center gap-2 mt-4 sm:mt-0 text-slate-500 text-xs">
             <span>Pro Tip: Press</span>
-            <kbd className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md text-slate-700 dark:text-slate-300 font-mono text-[10px] font-semibold border border-slate-200 dark:border-slate-700 shadow-sm">?</kbd>
-            <span>for keyboard shortcuts</span>
+            <kbd className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md text-slate-700 dark:text-slate-300 font-mono text-[10px] font-semibold border border-slate-200 dark:border-slate-700 shadow-sm">Ctrl+K</kbd>
+            <span>for command palette</span>
           </div>
         </div>
       </div>

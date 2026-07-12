@@ -66,6 +66,13 @@ export default function Navbar() {
 
         {/* Right controls */}
         <div className="flex items-center gap-2">
+          {/* Cmd+K hint */}
+          <kbd
+            className="hidden md:flex items-center gap-1 px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs font-mono cursor-pointer hover:border-indigo-400 transition"
+            title="Open command palette"
+          >
+            Ctrl+K
+          </kbd>
           {/* Theme toggle */}
           <button
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}

@@ -69,6 +69,6 @@ urlpatterns = [
     path('api/annotations/', include('annotations.urls')),
 ]
 
-# Serve uploaded media files in development
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Serve uploaded media files — in dev AND in Render production
+# (Render uses a persistent disk at /media on the same dyno, so this is safe)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
