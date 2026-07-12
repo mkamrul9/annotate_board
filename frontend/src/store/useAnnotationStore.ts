@@ -52,9 +52,7 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
     const formData = new FormData();
     formData.append('image', file);
     try {
-      const response = await api.post('annotations/images/', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const response = await api.post('annotations/images/', formData);
       // Prepend the new image and focus it
       set((state) => ({
         images: [response.data, ...state.images],
