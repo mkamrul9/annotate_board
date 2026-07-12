@@ -93,14 +93,11 @@ class AnnotationImageViewSet(viewsets.ModelViewSet):
                 {"error": "Image file not found on disk."},
                 status=status.HTTP_404_NOT_FOUND
             )
-        except Exception:
-            # Never leak internal error details to the client in production
-            error_detail = "Auto-annotation failed. Please try again."
-            if settings.DEBUG:
-                import traceback
-                error_detail = traceback.format_exc()
+        except Exception as e:
+            import traceback
+            error_detail = traceback.format_exc()
             return Response(
-                {"error": error_detail},
+                {"error": error_detail, "message": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
