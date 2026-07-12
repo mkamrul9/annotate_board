@@ -69,6 +69,12 @@ urlpatterns = [
     path('api/annotations/', include('annotations.urls')),
 ]
 
-# Serve uploaded media files — in dev AND in Render production
-# (Render uses a persistent disk at /media on the same dyno, so this is safe)
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+from django.urls import re_path
+from django.views.static import serve
+
+# Serve uploaded media files — explicitly using `serve` so it works even when DEBUG=False in production
+urlpatterns += [
+    re_path(r'^media/(?P<path>.*)$', serve, {
+        'document_root': settings.MEDIA_ROOT,
+    }),
+]
