@@ -18,9 +18,17 @@ def get_yolo_model():
     """Load the YOLO model once and cache it for the process lifetime."""
     global _yolo_model
     if _yolo_model is None:
-        from ultralytics import YOLO
-        model_path = os.environ.get('YOLO_MODEL_PATH', 'yolov8n-seg.pt')
-        _yolo_model = YOLO(model_path)
+        try:
+            import torch
+            torch.set_num_threads(1)  # Strictly limit to 1 thread for 512MB RAM environments
+            from ultralytics import YOLO
+            model_path = os.environ.get('YOLO_MODEL_PATH', 'yolov8n-seg.pt')
+            _yolo_model = YOLO(model_path)
+            # Warm up on CPU
+            _yolo_model(np.zeros((160, 160, 3), dtype=np.uint8), device='cpu', imgsz=160, verbose=False)
+        except Exception as e:
+            print(f"Failed to load YOLO model: {e}")
+            raise
     return _yolo_model
 
 
@@ -58,7 +66,8 @@ class AnnotationImageViewSet(viewsets.ModelViewSet):
 
         try:
             model = get_yolo_model()
-            results = model(image_path)
+            # Run inference with smaller image size to save RAM
+            results = model(image_path, device='cpu', imgsz=320, verbose=False)
             result = results[0]
 
             if result.masks is None:
