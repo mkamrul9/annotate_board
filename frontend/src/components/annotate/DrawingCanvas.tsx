@@ -270,48 +270,9 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
   const fitted = getFittedDimensions();
 
   return (
-    <div className="w-full h-[580px] bg-slate-100 dark:bg-slate-900 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 relative transition-colors" ref={containerRef}>
-
-      {/* ── Draw Mode Toggle ── */}
-      <div className="absolute top-4 left-4 z-10 flex bg-white/80 dark:bg-slate-950/80 p-1 rounded-lg backdrop-blur-md border border-slate-200 dark:border-slate-700 shadow-xl">
-        <button
-          onClick={() => { setDrawMode('polygon'); setCurrentPoints([]); setBoxPreview(null); }}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition ${
-            drawMode === 'polygon' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
-          }`}
-        >
-          <Pentagon size={14} /> Polygon
-        </button>
-        <button
-          onClick={() => { setDrawMode('box'); setCurrentPoints([]); setBoxPreview(null); }}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition ${
-            drawMode === 'box' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
-          }`}
-        >
-          <BoxSelect size={14} /> Bounding Box
-        </button>
-      </div>
-
-      {/* ── Controls overlay: Save / Cancel drawing ── */}
-      {drawMode === 'polygon' && currentPoints.length > 0 && (
-        <div className="absolute top-16 left-4 z-10 flex gap-2">
-          <button
-            onClick={handleCompletePolygon}
-            className="bg-green-600 hover:bg-green-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-lg transition"
-          >
-            ✓ Save Shape ({currentPoints.length} pts)
-          </button>
-          <button
-            onClick={() => setCurrentPoints([])}
-            className="bg-red-600/80 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-lg transition"
-          >
-            ✕ Cancel
-          </button>
-        </div>
-      )}
-
-      {/* ── Radiologist Toolkit Toolbar (top-center) ── */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-4 bg-white/90 dark:bg-slate-950/90 border border-slate-200 dark:border-slate-700 shadow-2xl rounded-xl px-4 py-2.5 backdrop-blur-sm">
+    <div className="flex flex-col gap-4">
+      {/* ── Radiologist Toolkit Toolbar (top-center, outside canvas) ── */}
+      <div className="flex flex-wrap items-center justify-center gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl px-4 py-2.5">
         <div className="flex items-center gap-2">
           <label className="text-xs text-slate-400 whitespace-nowrap">Brightness</label>
           <input
@@ -393,6 +354,46 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
           {showMasks ? <Eye size={16} /> : <EyeOff size={16} className="text-slate-400 dark:text-slate-500" />}
         </button>
       </div>
+
+      <div className="w-full h-[580px] bg-slate-100 dark:bg-slate-900 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 relative transition-colors" ref={containerRef}>
+
+      {/* ── Draw Mode Toggle ── */}
+      <div className="absolute top-4 left-4 z-10 flex bg-white/80 dark:bg-slate-950/80 p-1 rounded-lg backdrop-blur-md border border-slate-200 dark:border-slate-700 shadow-xl">
+        <button
+          onClick={() => { setDrawMode('polygon'); setCurrentPoints([]); setBoxPreview(null); }}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition ${
+            drawMode === 'polygon' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+          }`}
+        >
+          <Pentagon size={14} /> Polygon
+        </button>
+        <button
+          onClick={() => { setDrawMode('box'); setCurrentPoints([]); setBoxPreview(null); }}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition ${
+            drawMode === 'box' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+          }`}
+        >
+          <BoxSelect size={14} /> Bounding Box
+        </button>
+      </div>
+
+      {/* ── Controls overlay: Save / Cancel drawing ── */}
+      {drawMode === 'polygon' && currentPoints.length > 0 && (
+        <div className="absolute top-16 left-4 z-10 flex gap-2">
+          <button
+            onClick={handleCompletePolygon}
+            className="bg-green-600 hover:bg-green-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-lg transition"
+          >
+            ✓ Save Shape ({currentPoints.length} pts)
+          </button>
+          <button
+            onClick={() => setCurrentPoints([])}
+            className="bg-red-600/80 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-lg transition"
+          >
+            ✕ Cancel
+          </button>
+        </div>
+      )}
 
       {/* ── Konva Stage ── */}
       {dimensions.width > 0 && (

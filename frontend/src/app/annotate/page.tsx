@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { useAnnotationStore } from '@/store/useAnnotationStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import DrawingCanvas from '@/components/annotate/DrawingCanvas';
+import ConfirmModal from '@/components/layout/ConfirmModal';
 import {
   UploadCloud,
   ChevronLeft,
@@ -64,6 +65,7 @@ function AnnotateContent() {
   const { isAuthenticated } = useAuthStore();
   const searchParams = useSearchParams();
   const targetImageId = searchParams.get('imageId');
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const {
     images,
@@ -267,17 +269,23 @@ function AnnotateContent() {
                   </span>
                 )}
                 {activeImage && (
-                  <button
-                    onClick={() => {
-                      if (confirm('Are you sure you want to delete this image and all its annotations?')) {
-                        deleteImage(activeImage.id);
-                      }
-                    }}
-                    className="flex items-center justify-center p-1.5 text-red-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition"
-                    title="Delete Image"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  <>
+                    <button
+                      onClick={() => setIsDeleteModalOpen(true)}
+                      className="flex items-center justify-center p-1.5 text-red-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition"
+                      title="Delete Image"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                    
+                    <ConfirmModal
+                      isOpen={isDeleteModalOpen}
+                      onClose={() => setIsDeleteModalOpen(false)}
+                      onConfirm={() => deleteImage(activeImage.id)}
+                      title="Delete Image"
+                      message="Are you sure you want to delete this image and all its annotations? This action cannot be undone."
+                    />
+                  </>
                 )}
               </div>
 
