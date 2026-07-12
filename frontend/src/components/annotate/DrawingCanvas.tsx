@@ -510,5 +510,6 @@ export default function DrawingCanvas({ imageObj }: DrawingCanvasProps) {
         <kbd>Ctrl+Z</kbd> undo · <kbd>Esc</kbd> cancel · scroll to zoom
       </div>
     </div>
+    </div>
   );
 }
