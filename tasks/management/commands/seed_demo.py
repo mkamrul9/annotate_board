@@ -98,7 +98,7 @@ class Command(BaseCommand):
         if created:
             user.set_password(DEMO_PASSWORD)
             user.save()
-            self.stdout.write(self.style.SUCCESS(f'✓ Created user: {DEMO_USERNAME}'))
+            self.stdout.write(self.style.SUCCESS(f'[OK] Created user: {DEMO_USERNAME}'))
         else:
             self.stdout.write(f'  User "{DEMO_USERNAME}" already exists — skipping creation.')
 
@@ -120,10 +120,10 @@ class Command(BaseCommand):
                     due_date=task_data['due_date'],
                     subtasks=[],
                 )
-            self.stdout.write(self.style.SUCCESS(f'✓ Seeded {len(SEED_TASKS)} tasks for "{DEMO_USERNAME}".'))
+            self.stdout.write(self.style.SUCCESS(f'[OK] Seeded {len(SEED_TASKS)} tasks for "{DEMO_USERNAME}".'))
 
         self.stdout.write(self.style.SUCCESS(
-            f'\n🎉 Done! Demo credentials:\n'
+            f'\n[DONE] Demo credentials:\n'
             f'   Username: {DEMO_USERNAME}\n'
             f'   Password: {DEMO_PASSWORD}\n'
         ))

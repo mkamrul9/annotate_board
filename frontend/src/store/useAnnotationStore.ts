@@ -25,6 +25,7 @@ interface AnnotationState {
   deletePolygon: (polygonId: number, imageId: number) => Promise<void>;
   restorePolygon: (polygon: Polygon, imageId: number) => Promise<void>;
   autoAnnotate: (imageId: number) => Promise<void>;
+  deleteImage: (imageId: number) => Promise<void>;
 }
 
 export const useAnnotationStore = create<AnnotationState>((set, get) => ({
@@ -64,6 +65,23 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
       console.error('Upload failed', error);
       toast.error('Upload failed. Please try again.');
       set({ uploading: false });
+    }
+  },
+
+  deleteImage: async (imageId) => {
+    try {
+      await api.delete(`annotations/images/${imageId}/`);
+      set((state) => {
+        const newImages = state.images.filter((img) => img.id !== imageId);
+        return {
+          images: newImages,
+          currentIndex: Math.min(state.currentIndex, Math.max(0, newImages.length - 1))
+        };
+      });
+      toast.success('Image deleted successfully');
+    } catch (error) {
+      console.error('Delete failed', error);
+      toast.error('Failed to delete image');
     }
   },
 

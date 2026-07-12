@@ -10,16 +10,21 @@ class PolygonAnnotationSerializer(serializers.ModelSerializer):
 class AnnotationImageSerializer(serializers.ModelSerializer):
     # Nested serializer to fetch an image and all its drawn polygons in one request!
     polygons = PolygonAnnotationSerializer(many=True, read_only=True)
-    # Return an absolute URL so the frontend works regardless of deployment domain
-    image = serializers.SerializerMethodField()
 
     class Meta:
         model = AnnotationImage
         fields = ['id', 'image', 'uploaded_at', 'polygons']
         read_only_fields = ['id', 'uploaded_at']
 
-    def get_image(self, obj):
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
         request = self.context.get('request')
-        if obj.image and request:
-            return request.build_absolute_uri(obj.image.url)
-        return obj.image.url if obj.image else None
+        if instance.image and getattr(instance.image, 'url', None):
+            url = instance.image.url
+            if request is not None:
+                ret['image'] = request.build_absolute_uri(url)
+            else:
+                ret['image'] = url
+        else:
+            ret['image'] = None
+        return ret

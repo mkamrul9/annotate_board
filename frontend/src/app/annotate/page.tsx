@@ -15,6 +15,7 @@ import {
   Loader2,
   ImageIcon,
   Shapes,
+  Trash2,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -73,6 +74,7 @@ function AnnotateContent() {
     uploadImage,
     setCurrentIndex,
     autoAnnotate,
+    deleteImage,
   } = useAnnotationStore();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -263,6 +265,19 @@ function AnnotateContent() {
                     <Shapes size={11} />
                     {activeImage.polygons.length} annotation(s)
                   </span>
+                )}
+                {activeImage && (
+                  <button
+                    onClick={() => {
+                      if (confirm('Are you sure you want to delete this image and all its annotations?')) {
+                        deleteImage(activeImage.id);
+                      }
+                    }}
+                    className="flex items-center justify-center p-1.5 text-red-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition"
+                    title="Delete Image"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 )}
               </div>
 
